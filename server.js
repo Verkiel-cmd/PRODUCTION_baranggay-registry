@@ -83,6 +83,7 @@ app.post('/api/entries', async (req, res) => {
  
            const newEntry = new Entry({
              ref: newRef,
+             fullname,
              title,
              category,
              purok,

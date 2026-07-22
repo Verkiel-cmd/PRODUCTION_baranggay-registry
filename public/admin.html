@@ -30,6 +30,7 @@
       <thead>
         <tr>
           <th>Ref</th>
+          <th>Full Name</th>
           <th>Title</th>
           <th>Category</th>
           <th>Purok</th>
@@ -212,6 +213,7 @@
     .map(e => `
       <tr data-ref="${e.ref}">
         <td class="cell-ref">${e.ref}</td>
+        <td class="cell-fullname">${e.fullname}</td>
         <td class="cell-title">${e.title}</td>
         <td class="cell-category">${e.category}</td>
         <td class="cell-purok">${e.purok}</td>
