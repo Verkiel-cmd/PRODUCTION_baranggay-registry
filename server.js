@@ -1,24 +1,29 @@
+const express = require('express');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 const Entry = require('./models/entry');
+
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 //Mongodb configuration
 const DB_URL = process.env.ATLAS_URL;
 mongoose.connect(DB_URL);
 const conn = mongoose.connection;
 
-console.once('open', () => {
-  console.log('Successfully connected to the database!');
-})
-
-//const DATA_FILE = path.join(__dirname, 'data.json');
-
+const cors = require('cors');
 app.use(express.static('public'));
 app.use(express.json());
+// ...
+app.use(cors());
+
+conn.once('open', () => {
+  console.log('Successfully connected to the database!');
+});
+
+//const DATA_FILE = path.join(__dirname, 'data.json');
 
 let refCounter = 232;
 
