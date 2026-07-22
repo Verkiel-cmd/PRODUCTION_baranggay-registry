@@ -27,7 +27,7 @@
         <div class="top-container">
     <p class="title-web">Baranggay Panacan · Service Registry</p>
     <h1>File a concern.<br>Track the record.</h1>
-    <h4>If you are the admin of this page, <a href="http://localhost:3000/admin.html">click here</a></h4>   
+    <h4>If you are the admin of this page, <a href="admin.html">click here</a></h4>   
     <p class="paragraph">Request reference number form</p>
 
     <a class="file-btn" href="#">File a request</a>
@@ -222,7 +222,6 @@
       purok: purok
     };
 
-    fetch('https://production-baranggay-registry.onrender.com/api/entries')
     fetch('https://production-baranggay-registry.onrender.com/api/entries', {
       method: 'POST',
       headers: {
