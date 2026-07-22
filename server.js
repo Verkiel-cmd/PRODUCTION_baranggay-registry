@@ -140,5 +140,5 @@ app.patch('/api/entries/:ref', async (req, res) => {
 
 // --- Server Startup ---
 app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}!`);
+  console.log(`Server is running on port ${PORT}`);
 });

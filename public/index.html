@@ -207,7 +207,7 @@
     render();
   });
  
-  // When the public form submits, add the entry, persist it and notify other pages.
+  //add submit listener
   form.addEventListener('submit', (evt) => {
     evt.preventDefault();
     const name = document.getElementById('fullname').value.trim();
@@ -222,7 +222,8 @@
       purok: purok
     };
 
-    fetch('/api/entries', {
+    fetch('https://production-baranggay-registry.onrender.com/api/entries')
+    fetch('https://production-baranggay-registry.onrender.com/api/entries', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
