@@ -145,7 +145,7 @@
   const confirmMsg = document.getElementById('confirmMsg');
  
   function loadEntriesFromServer() {
-    fetch('/api/entries')
+    fetch('https://production-baranggay-registry.onrender.com/api/entries')
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch entries from the server.');
