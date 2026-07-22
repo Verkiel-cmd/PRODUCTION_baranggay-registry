@@ -149,7 +149,7 @@
     const board = document.getElementById('adminBoard');
 
     function loadEntriesFromServer() {
-     fetch('/api/entries')
+     fetch('https://production-baranggay-registry.onrender.com/api/entries')
     .then(response => {
       if (!response.ok) throw new Error('Failed to load server data');
       return response.json();
@@ -238,7 +238,7 @@
         const payload = { status: newStatus };
         if (reason) payload.note = reason;
 
-        fetch(`/api/entries/${ref}`, {
+        fetch(`/https://production-baranggay-registry.onrender.com/api/entries/${ref}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
