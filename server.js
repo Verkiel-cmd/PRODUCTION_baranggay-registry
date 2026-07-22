@@ -73,8 +73,8 @@ app.get('/api/entries', async (req, res) => {
 
 app.post('/api/entries', async (req, res) => {
          try {
-           const { title, category, purok } = req.body;
-           if (!title || !category || !purok) {
+           const { fullname, title, category, purok } = req.body;
+           if (!fullname || !title || !category || !purok) {
              return res.status(400).json({ error: 'Missing required request fields.' });
            }
  
