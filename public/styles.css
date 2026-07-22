@@ -1,0 +1,250 @@
+:root{
+    --paper:#F3F1EA;
+    --ink:#1C2B45;
+    --gold:#B8863B;
+    --green:#3F5D46;
+    --red:#8B3A3A;
+    --charcoal:#2A2A28;
+    --rule: rgba(28,43,69,.18);
+  }
+ 
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--paper);
+    color:var(--charcoal);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.55;
+  }
+  h1,h2{
+    font-family:'Fraunces', serif;
+    color:var(--ink);
+    margin:0;
+  }
+  a{color:var(--ink);}
+ 
+  :focus-visible{
+    outline:2px solid var(--gold);
+    outline-offset:3px;
+  }
+ 
+  /* header */
+  .site-header{
+    border-bottom:3px double var(--ink);
+    background:var(--paper);
+  }
+  .site-header .container{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding-block:1rem;
+  }
+  .capital{
+    width:44px; height:44px;
+    border-radius:50%;
+    border:2px solid var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    color:var(--ink);
+    position:relative;
+    flex:none;
+  }
+  .capital::after{
+    content:'';
+    position:absolute; inset:4px;
+    border:1px solid var(--gold);
+    border-radius:50%;
+  }
+  .brand{display:flex; align-items:center; gap:.75rem;}
+  .brand-name{font-family:'Fraunces', serif; font-weight:700; font-size:1.15rem; color:var(--ink);}
+  .brand-sub{font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--charcoal); opacity:.65;}
+  .header-link{
+    font-size:.85rem; font-weight:600; text-decoration:none;
+    border-bottom:1px solid var(--ink); padding-bottom:2px;
+  }
+ 
+  /* hero */
+  .top-design{
+    padding-block: 4rem 3rem;
+    padding: 2rem;
+  }
+  .title-web{
+    font-size:.75rem; font-weight:600; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--gold); margin-bottom:.85rem;
+  }
+  .top-design h1{
+    font-size:clamp(2.1rem, 1.5rem + 2.4vw, 3.6rem);
+    font-weight:700;
+    max-width:16ch;
+  }
+  .paragraph{
+    max-width:46ch;
+    margin-top:1.1rem;
+    font-size:1.05rem;
+    color:var(--charcoal);
+  }
+  .btn-ink{
+    display:inline-block;
+    margin-top:1.6rem;
+    background:var(--ink);
+    color:var(--paper);
+    text-decoration:none;
+    font-weight:600;
+    font-size:.9rem;
+    padding:.75rem 1.4rem;
+    border-radius:2px;
+    border:1px solid var(--ink);
+    transition:background .15s ease;
+  }
+  .btn-ink:hover{background:#14213a; color:var(--paper);}
+ 
+  .progress{
+    display:flex; flex-wrap:wrap; gap:2.2rem;
+    margin:2.6rem 0 0; padding-top:1.6rem;
+    border-top:1px dashed var(--rule);
+  }
+  .progress div{display:flex; flex-direction:column;}
+  .progress dt{
+    font-size:.68rem; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--charcoal); opacity:.65; margin-bottom:.25rem;
+  }
+  .progress dd{
+    margin:0; font-family:'IBM Plex Mono', monospace; font-weight:600;
+    font-size:1.3rem; color:var(--ink);
+  }
+ 
+  /* registry */
+  .register-table{
+    padding: 2rem;;
+  }
+  .registry{
+    padding-block:1rem 4rem;
+  }
+  .registry h2{
+    font-size:1.5rem; font-weight:700; margin-bottom:1.2rem;
+  }
+/* form */
+  .field{margin-bottom:1.1rem;}
+  .field label{
+    display:block; font-size:.78rem; font-weight:600;
+    letter-spacing:.03em; margin-bottom:.35rem; color:var(--ink);
+  }
+  .field input,
+  .field select,
+  .field textarea{
+    width:100%;
+    border:1px solid var(--rule);
+    background:#fff;
+    padding:.6rem .7rem;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:.92rem;
+    border-radius:2px;
+    color:var(--charcoal);
+  }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus{
+    border-color:var(--ink);
+  }
+  .file-btn{
+    background:var(--ink); color:var(--paper); border:none;
+    font-weight:600; font-size:.9rem;
+    padding:.75rem 1.4rem; border-radius:2px; cursor:pointer;
+  }
+  .file-btn:hover{background:#14213a;}
+  .confirm{
+    margin-top:.9rem; font-size:.85rem; color:var(--green);
+    font-family:'IBM Plex Mono', monospace;
+  }
+ 
+  /* filters */
+  .registry-head{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    gap:.75rem; 
+    margin-bottom:1.2rem;
+  }
+  .filter-group{
+    display:flex; 
+    flex-wrap:wrap; 
+    gap:.4rem;
+  }
+  .filter-btn{
+    background:transparent;
+    border:1px solid var(--rule);
+    color:var(--charcoal);
+    font-size:.72rem; font-weight:600; letter-spacing:.04em;
+    text-transform:uppercase;
+    padding:.35rem .7rem; border-radius:20px; cursor:pointer;
+  }
+  .filter-btn[aria-pressed="true"]{
+    background:var(--ink); border-color:var(--ink); color:var(--paper);
+  }
+ 
+  /* ledger */
+  .ledger{list-style:none; margin:0; padding:0;}
+  .ledger-row{
+    padding:1rem 0;
+    border-top:1px dashed var(--rule);
+    display:flex; flex-wrap:wrap; align-items:center;
+    justify-content:space-between; gap:.75rem;
+  }
+  .ledger-row:last-child{border-bottom:1px dashed var(--rule);}
+  .entry-ref{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.72rem; color:var(--charcoal); opacity:.6;
+  }
+  .entry-title{font-weight:600; color:var(--ink); margin-top:.1rem;}
+  .entry-meta{font-size:.78rem; color:var(--charcoal); opacity:.7; margin-top:.15rem;}
+ 
+  .stamp{
+    display:inline-flex; align-items:center;
+    padding:.32em .8em;
+    border:2px solid currentColor;
+    border-radius:3px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.68rem; font-weight:600;
+    letter-spacing:.1em; text-transform:uppercase;
+    transform:rotate(-3deg);
+    position:relative;
+    flex:none;
+  }
+  .stamp::after{
+    content:''; position:absolute; inset:-3px;
+    border:1px solid currentColor; border-radius:5px; opacity:.35;
+  }
+  .stamp--pending{color:var(--gold);}
+  .stamp--progress{color:var(--ink);}
+  .stamp--released{color:var(--green);}
+  .stamp--urgent{color:var(--red);}
+  .stamp--removed{color: gray;}
+ 
+  .stamp-in{animation:stampIn .35s cubic-bezier(.2,1.4,.4,1);}
+  @keyframes stampIn{
+    from{transform:scale(2) rotate(-14deg); opacity:0;}
+    to{transform:scale(1) rotate(-3deg); opacity:1;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .stamp-in{animation:none;}
+    html{scroll-behavior:auto;}
+  }
+ 
+  .site-footer{
+    border-top:3px double var(--ink);
+    padding-block:1.6rem;
+    font-size:.82rem;
+    color:var(--charcoal);
+  }
+  .site-footer .note{opacity:.6; margin-top:.35rem; font-size:.76rem;}
+
+
+
+
+
+
+
+
+

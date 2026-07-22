@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Admin - Service Registry</title>
+  <link rel="stylesheet" href="admin.css"></link>
+</head>
+<body>
+
+
+  <div id="loginSection" class="admin-box">
+    <h1>Admin Login</h1>
+    <form class="inside-login"id="adminLogin" novalidate>
+      <label class="username">Username: <input id="adminUser" value="admin"></label>
+      <label class="password">Password: <input id="adminPass" type="password" value="password"></label>
+      <button class="btn-bt" type="submit">Login</button>
+    </form>
+  </div>
+  
+
+  <!--
+    Hard-coded credentials above for development only: username 'admin' / password 'password'.
+    Do NOT use this in production. Replace with real authentication when ready.
+  -->
+
+  <section id="adminBoard" hidden>
+    <h2>Admin Dashboard</h2>
+
+    <table class="table" id="requestsTable" border="1">
+      <thead>
+        <tr>
+          <th>Ref</th>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Purok</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="adminTableBody">
+
+
+        <!--
+          Example row with controller UI. When you wire up JavaScript, give each <tr>
+          a `data-ref` attribute (the request reference) so handlers can identify the row.
+          The controls below are purely UI: attach click/change listeners to them and
+          use the `data-ref` value to update the corresponding entry in your `entries`
+          array or to send an API request to your server.
+        -->
+        <tr data-ref="MLY-2026-0231">
+          <td class="cell-ref">MLY-2026-0231</td>
+          <td class="cell-title">Streetlight out along Purok 4</td>
+          <td class="cell-category">Infrastructure repair</td>
+          <td class="cell-purok">Purok 4</td>
+          <td class="cell-date">Jul 12</td>
+          <td class="cell-status">pending</td>
+          <td class="cell-actions">
+            <!--
+              Quick-action buttons: useful for single-click transitions. To connect:
+              - Add a delegated click listener on the table body.
+              - On click, walk up from event.target to the enclosing <tr> and read `tr.dataset.ref`.
+              - Determine new status from the button (e.g., dataset.status or class name).
+              - Update local state or call backend (see wiring notes below).
+            -->
+
+            <button class="action-btn" data-status="released" aria-label="Mark released">Release</button>
+            <button class="action-btn" data-status="progress" aria-label="Mark in progress">In progress</button>
+            <button class="action-btn" data-status="urgent" aria-label="Mark urgent">Urgent</button>
+
+            <!--
+              Alternative: a compact select + apply button for explicit updates.
+              To connect:
+              - Read the selected value from the <select> and the row's `data-ref`.
+              - Call your update logic with (ref, newStatus).
+            -->
+            <label style="margin-left:8px">
+              Change:
+              <select class="status-select" aria-label="Select status">
+                <option value="pending">pending</option>
+                <option value="progress">in progress</option>
+                <option value="released">released</option>
+                <option value="urgent">urgent</option>
+              </select>
+            </label>
+            <button class="apply-status" aria-label="Apply selected status">Apply</button>
+          </td>
+        </tr>
+
+        <!-- Additional sample row to show multiple entries; generate rows dynamically when connected. -->
+        <tr data-ref="MLY-2026-0230">
+          <td class="cell-ref">MLY-2026-0230</td>
+          <td class="cell-title">Barangay clearance for employment</td>
+          <td class="cell-category">Document request</td>
+          <td class="cell-purok">Purok 2</td>
+          <td class="cell-date">Jul 11</td>
+          <td class="cell-status">released</td>
+          <td class="cell-actions">
+            <button class="action-btn" data-status="released">Release</button>
+            <button class="action-btn" data-status="progress">In progress</button>
+            <select class="status-select">
+              <option value="pending">pending</option>
+              <option value="progress">in progress</option>
+              <option value="released">released</option>
+              <option value="urgent">urgent</option>
+            </select>
+            <button class="apply-status">Apply</button>
+          </td>
+        </tr>
+
+        <!-- Additional rows should be generated dynamically when you connect a script or API. -->
+      </tbody>
+    </table>
+  </section>
+
+  <script>
+    // Minimal client-side admin login (development only)
+    // - Credentials: username 'admin' and password 'password' (matches the input value in the form)
+    // - This is local-only and not secure. Replace with server-side auth for production.
+    document.getElementById('adminLogin').addEventListener('submit', (evt) => {
+      evt.preventDefault();
+      const user = document.getElementById('adminUser').value;
+      const pass = document.getElementById('adminPass').value;
+      // Hard-coded check for development convenience
+      if (user === 'admin' && pass === 'password') {
+        // hide the entire login section and reveal admin board
+        document.getElementById('loginSection').hidden = true;
+        const board = document.getElementById('adminBoard');
+        board.hidden = false;
+        // After showing the board, load shared entries and render the table.
+        loadEntriesFromServer();
+        renderAdminTable();
+        // focus first control for keyboard users
+        const first = board.querySelector('.action-btn, .apply-status, .status-select');
+        if (first) first.focus();
+      } else {
+        // simple feedback; you can replace with inline message or aria-live region
+        alert('Invalid admin credentials');
+      }
+    });
+
+    // --- Data sync helpers (admin page) ---
+    // Use `localStorage` + the `storage` event to synchronize entries between tabs.
+    // This is simpler than BroadcastChannel and works in all modern browsers.
+    // Note: the `storage` event fires in OTHER tabs, not in the tab that wrote to localStorage.
+    let entries = [];
+    const tbody = document.querySelector('#requestsTable tbody');
+    const loginSection = document.getElementById('loginSection');
+    const board = document.getElementById('adminBoard');
+
+    function loadEntriesFromServer() {
+     fetch('/api/entries')
+    .then(response => {
+      if (!response.ok) throw new Error('Failed to load server data');
+      return response.json();
+    })
+    .then(data => {
+      entries = data;
+      renderAdminTable(); // Redraw table with fresh data
+    })
+    .catch(error => console.error('Error fetching entries:', error));
+   }
+
+    // Load entries from localStorage (fall back to an empty array if absent).
+    //function loadEntriesFromStorage(){
+      //try{
+        //const raw = localStorage.getItem(STORAGE_KEY);
+        //if(!raw || raw === 'undefined'){
+          // no stored data, use defaults
+          //entries = DEFAULT_ENTRIES.slice();
+          //return;
+        //}
+        //entries = JSON.parse(raw);
+        //if(!Array.isArray(entries)) entries = DEFAULT_ENTRIES.slice();
+      //}catch(e){
+        // malformed JSON — fall back to defaults
+        //entries = DEFAULT_ENTRIES.slice();
+      //}
+    //}
+
+    // Persist entries to localStorage. Other tabs will receive a `storage` event and update.
+    function saveEntriesToStorage(){
+      try{
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+      }catch(e){
+        console.error('Failed to save entries', e);
+      }
+    }
+
+    // Listen for storage events from other tabs/windows and refresh the admin table.
+    window.addEventListener('storage', (e) => {
+      if(e.key === STORAGE_KEY){
+        try{
+          entries = e.newValue ? JSON.parse(e.newValue) : [];
+        }catch(_){
+          entries = [];
+        }
+        renderAdminTable();
+      }
+    });
+
+    // Render the admin table from the `entries` array.
+    function renderAdminTable(){
+      const activeEntries = entries.filter(e => e.status !== 'removed');
+
+      if (activeEntries.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No active records found.</td></tr>';
+        return;
+      }
+  tbody.innerHTML = entries
+    .filter(e => e.status !== 'removed')
+    .map(e => `
+      <tr data-ref="${e.ref}">
+        <td class="cell-ref">${e.ref}</td>
+        <td class="cell-title">${e.title}</td>
+        <td class="cell-category">${e.category}</td>
+        <td class="cell-purok">${e.purok}</td>
+        <td class="cell-date">${e.date}</td>
+        <td class="cell-status">${e.status}</td>
+        <td class="cell-actions">
+          <button class="action-btn" data-status="released">Release</button>
+          <button class="action-btn" data-status="progress">In progress</button>
+          <button class="action-btn" data-status="urgent">Urgent</button>
+        <select class="status-select">
+          <option value="pending" ${e.status === 'pending' ? 'selected' : ''}>pending</option>
+          <option value="progress" ${e.status === 'progress' ? 'selected' : ''}>in progress</option>
+          <option value="released" ${e.status === 'released' ? 'selected' : ''}>released</option>
+          <option value="urgent" ${e.status === 'urgent' ? 'selected' : ''}>urgent</option>
+        </select>
+          <button class="apply-status">Apply</button>
+          <button class="delete-btn">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+}
+
+      function updateRequestStatusOnServer(ref, newStatus, reason = null) {
+        const payload = { status: newStatus };
+        if (reason) payload.note = reason;
+
+        fetch(`/api/entries/${ref}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        .then(response => {
+          if (!response.ok) throw new Error('Server update failed');
+          return response.json();
+        })
+        .then(() => {
+          // Re-fetch data from server to keep UI in sync
+          loadEntriesFromServer();
+        })
+        .catch(error => console.error('Update error:', error));
+      }
+
+    // Update a request's status by ref, persist, and broadcast.
+    // Returns the previous status (useful for undo).
+    //function updateRequestStatus(ref, status){
+      //const entry = entries.find(x => x.ref === ref);
+      //if(!entry) return null;
+      //const old = entry.status;
+      //entry.status = status;
+      //saveEntriesToStorage();
+      //renderAdminTable();
+      //return old;
+    //}
+
+// --- OLD VERSION: hard delete (no notes, no trace, fully erased) ---
+// function deleteRequest(ref){
+//   const index = entries.findIndex(x => x.ref === ref);
+//   if(index === -1) return false;
+//   entries.splice(index, 1);
+//   saveEntriesToStorage();
+//   renderAdminTable();
+//   return true;
+// }
+
+    // Remove a request by ref, persist the updated list, and re-render.
+    function deleteRequest(ref, reason){
+       const entry = entries.find(x => x.ref === ref);
+       if(!entry) return false;
+       entry.status = 'removed';
+       entry.note = reason;
+       saveEntriesToStorage();
+       renderAdminTable();
+       return true;
+    }
+
+    // Event delegation: handle clicks for quick-action buttons, apply buttons, and delete button.
+    tbody.addEventListener('click', (evt) => {
+      const btn = evt.target.closest('button');
+      if(!btn) return;
+      const tr = btn.closest('tr');
+      if(!tr) return;
+      const ref = tr.dataset.ref;
+      if(btn.classList.contains('action-btn')){
+        updateRequestStatusOnServer(ref, btn.dataset.status);
+      }else if(btn.classList.contains('apply-status')){
+        const select = tr.querySelector('.status-select');
+        if(select){
+          updateRequestStatusOnServer(ref, select.value);
+        }
+      }else if(btn.classList.contains('delete-btn')){
+        const reason = prompt(`Why are you removing request ${ref}? This will be shown to the requester.`);
+        if(reason === null) return;
+        if(reason.trim() === ''){
+          alert('Please enter a reason before removing.');
+          return;
+        }
+        deleteRequest(ref, reason.trim());
+        updateRequestStatusOnServer(ref, 'removed', reason.trim());
+      }
+      }); 
+    // On initial load of admin page, load entries from server and render.
+    loadEntriesFromServer();
+    renderAdminTable();
+
+    // ADMIN PAGE — integration notes (comments only; no executable functions beyond login):
+    // Loading data
+    // 1) Populate the table body by either:
+    //    - Re-using the same `entries` array from your public page (if loaded in the same context),
+    //    - Or fetching from a backend endpoint (example: GET /api/requests) and rendering rows.
+    //    Ensure each <tr> includes `data-ref="<REF>"` so rows are addressable.
+    //
+    // Wiring controller UI (event delegation recommended)
+    // 2) Delegate clicks/changes from the table to handle controls centrally. Example pseudocode (commented):
+    // const tbody = document.querySelector('#requestsTable tbody');
+    // tbody.addEventListener('click', (evt) => {
+    //   const btn = evt.target.closest('button');
+    //   if (!btn) return; // ignore non-button clicks
+    //   const row = btn.closest('tr');
+    //   const ref = row && row.dataset.ref; // request identifier
+    //   const newStatus = btn.dataset.status; // for quick-action buttons
+    //   // call updateRequestStatus(ref, newStatus)
+    // });
+    //
+    // For the select + Apply button pattern:
+    // tbody.addEventListener('click', (evt) => {
+    //   const apply = evt.target.closest('.apply-status');
+    //   if (!apply) return;
+    //   const row = apply.closest('tr');
+    //   const ref = row.dataset.ref;
+    //   const select = row.querySelector('.status-select');
+    //   const selected = select.value;
+    //   // call updateRequestStatus(ref, selected)
+    // });
+    //
+    // Updating state
+    // 3) Implement `updateRequestStatus(ref, status)` in your script (not here). Its responsibilities:
+    //    - Option A (local only): find the entry in the `entries` array, change `entry.status = status`, then re-render the admin table and the public ledger if needed.
+    //    - Option B (server-backed): send a request to your API (e.g., PUT /api/requests/:ref with { status }),
+    //      optimistically update the UI, and rollback if the server returns an error.
+    //
+    // Confirmation & undo
+    // 4) After applying a change, show a short confirmation message with an Undo action.
+    //    Store the previous status in a temp variable so you can restore it if the user clicks Undo.
+    //
+    // Accessibility notes
+    // 5) Use descriptive `aria-label` values on buttons and ensure status changes are announced
+    //    via an `aria-live` region (like the existing `#confirmMsg` in the public page).
+    //
+    // Persistence during development
+    // 6) If you want to persist changes without a backend, use `localStorage`:
+    //    - Save: localStorage.setItem('entries', JSON.stringify(entries));
+    //    - Load: entries = JSON.parse(localStorage.getItem('entries') || '[]');
+  </script>
+
+</body>
+</html>

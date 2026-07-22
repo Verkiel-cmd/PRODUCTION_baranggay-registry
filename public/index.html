@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="stylesheet" href="styles.css">
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="container">
+            <div class="brand">
+                <div class="capital">P</div>
+                  <div class="brand-name">Barangay Panacan</div>
+                  <div class="brand-sub">Service Registry</div>
+            </div>
+           </div>
+        </div>
+    </header>
+
+    <section class="top-design">
+        <div class="top-container">
+    <p class="title-web">Baranggay Panacan · Service Registry</p>
+    <h1>File a concern.<br>Track the record.</h1>
+    <h4>If you are the admin of this page, <a href="http://localhost:3000/admin.html">click here</a></h4>   
+    <p class="paragraph">Request reference number form</p>
+
+    <a class="file-btn" href="#">File a request</a>
+
+<dl class="progress">
+     <div><dt>Filed</dt><dd id="statFiled">0</dd></div>
+     <div><dt>Resolved</dt><dd id="statResolved">0</dd></div>
+     <div><dt>Avg. turnaround</dt><dd id="statAvg">—</dd></div>
+</dl>
+</div>
+</section>
+
+<main class="register-table" id="file">
+    <div class="row g-5">
+
+        <div class="field-entry">
+            <h2>New entry</h2>
+            <form id="requestForm" novalidate>
+                <div class="field">
+                    <label for="fullname">Full name</label>
+                    <input type="text" id="fullname" required>
+                 </div>
+                <div class="field">
+                    <label for="purok">Purok / Zone</label>
+            <input type="text" id="purok" placeholder="e.g., Purok 4" required>
+                </div>
+              <div class="field">
+        <label for="category">Category</label>
+        <select id="category" required>
+                <option value="Document request">Document request</option>
+                <option value="Infrastructure repair">Infrastructure repair</option>
+                <option value="Peace &amp; order">Peace &amp; order</option>
+                <option value="Health &amp; sanitation">Health &amp; sanitation</option>
+                <option value="Other">Other</option>
+        </select>
+        </div>
+        <div class="field">
+          <label for="description">What's the concern?</label>
+          <textarea id="description" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="submit-btn">Submit request</button>
+        <p class="confirm" id="confirmMsg" role="status" aria-live="polite" hidden></p>
+      </form>
+    </div>
+ 
+    <div class="col-lg-7">
+      <div class="registry-head">
+        <h2>Recent entries</h2>
+        <div class="filter-group" id="filterGroup" role="group" aria-label="Filter by status">
+          <button class="filter-btn" data-filter="all" aria-pressed="true">All</button>
+          <button class="filter-btn" data-filter="pending" aria-pressed="false">Pending</button>
+          <button class="filter-btn" data-filter="progress" aria-pressed="false">In progress</button>
+          <button class="filter-btn" data-filter="released" aria-pressed="false">Released</button>
+          <button class="filter-btn" data-filter="urgent" aria-pressed="false">Urgent</button>
+          <button class="filter-btn" data-filter="removed" aria-pressed="false">Removed</button>
+        </div>
+      </div>
+      <ul class="ledger" id="ledgerList"></ul>
+    </div>
+ 
+  </div>
+</main>
+ 
+<footer class="site-footer">
+  <div class="container">
+    <div>Barangay Panacan Hall · Open Mon–Fri, 8 AM–5 PM</div>
+    <div class="note">Template.</div>
+  </div>
+</footer>
+
+
+<script>
+  // `entries` is the source-of-truth list of requests. We persist it to `localStorage`
+  // so other pages (like `admin.html`) can read and react to changes.
+  let entries = [];
+
+  // Default sample data used if storage is empty or malformed.
+  const DEFAULT_ENTRIES = [
+    {ref:'MLY-2026-0231', title:'Streetlight out along Purok 4', category:'Infrastructure repair', purok:'Purok 4', date:'Jul 12, 2026', status:'pending'},
+    {ref:'MLY-2026-0230', title:'Barangay clearance for employment', category:'Document request', purok:'Purok 2', date:'Jul 11, 2026', status:'released'},
+    {ref:'MLY-2026-0229', title:'Loose dog roaming near school', category:'Peace & order', purok:'Purok 1', date:'Jul 10, 2026', status:'progress'},
+    {ref:'MLY-2026-0228', title:'Clogged drainage causing flooding', category:'Infrastructure repair', purok:'Purok 6', date:'Jul 9, 2026', status:'urgent'},
+    {ref:'MLY-2026-0227', title:'Request for indigency certificate', category:'Document request', purok:'Purok 3', date:'Jul 8, 2026', status:'released'},
+  ];
+
+  // We synchronize pages using `localStorage` + the `storage` event.
+  // This is simpler than BroadcastChannel and works in all modern browsers.
+  // Note: the `storage` event fires only in other tabs/windows, not in the same tab that wrote to storage.
+  // So after saving we always call `render()` locally as well.
+  
+  // Load entries from localStorage if present, otherwise use the defaults.
+// Fetches the centralized entries array from the Express server backend
+
+  // Save entries to localStorage and notify other tabs via BroadcastChannel.
+  //function saveEntriesToStorage(){
+    //try{
+      // Write the current entries to localStorage. Other tabs will receive a `storage` event.
+      //localStorage.setItem('entries', JSON.stringify(entries));
+    //}catch(e){
+      //console.error('Failed to save entries to storage', e);
+    //}
+  //}
+  // When other tabs update `localStorage`, the `storage` event fires here.
+  // Update local `entries` and re-render when that happens.
+
+ 
+  const stampLabel = {pending:'Pending', progress:'In progress', released:'Released', urgent:'Urgent', removed:'Removed'};
+  let refCounter = 232;
+  let currentFilter = 'all';
+  let justAddedRef = null;
+ 
+  const ledgerList = document.getElementById('ledgerList');
+  const filterGroup = document.getElementById('filterGroup');
+  const form = document.getElementById('requestForm');
+  const confirmMsg = document.getElementById('confirmMsg');
+ 
+  function loadEntriesFromServer() {
+    fetch('/api/entries')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch entries from the server.');
+        }
+        return response.json();
+      })
+      .then(data => {
+        entries = data;
+        render();
+        updateStats();
+      })
+      .catch(error => {
+        console.error('Error loading registry data:', error);
+      });
+  }
+
+  function updateStats() {
+    const filed = entries.length;
+    const resolved = entries.filter(e => e.status === 'released').length;
+    const avgDays = entries.length > 0 ? '1 day' : '—';
+    document.getElementById('statFiled').textContent = filed;
+    document.getElementById('statResolved').textContent = resolved;
+    document.getElementById('statAvg').textContent = avgDays;
+  }
+
+  function render(){
+    const rows = entries.filter(e => {
+      if (currentFilter === 'removed') return e.status ==='removed';
+      if (currentFilter === 'all') return e.status !== 'removed';
+          return e.status === currentFilter;                              // any other specific filter
+  });
+    ledgerList.innerHTML = rows.map(e => `
+    <li class="ledger-row">
+    <div>
+      <div class="entry-ref">${e.ref}</div>
+      <div class="entry-title">${e.title}</div>
+      <div class="entry-meta">${e.category} · ${e.purok} · Filed ${e.date}</div>
+      
+      <!-- THIS LINE BELOW IS THE FIX -->
+      ${e.note ? `<div class="entry-note"><strong>Note:</strong> ${e.note}</div>` : ''}
+    </div>
+    <span class="stamp stamp--${e.status} ${e.ref === justAddedRef ? 'stamp-in' : ''}">${stampLabel[e.status]}</span>
+  </li>`).join('') || '<li class="ledger-row"><span class="entry-meta">No entries under this filter yet.</span></li>';
+  }
+
+  function formatToday() {
+    return new Date().toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+      })
+  }
+ 
+  filterGroup.addEventListener('click', (evt) => {
+    const btn = evt.target.closest('.filter-btn');
+    if(!btn) return;
+    currentFilter = btn.dataset.filter;
+    [...filterGroup.children].forEach(b => b.setAttribute('aria-pressed', b === btn));
+    render();
+  });
+ 
+  // When the public form submits, add the entry, persist it and notify other pages.
+  form.addEventListener('submit', (evt) => {
+    evt.preventDefault();
+    const name = document.getElementById('fullname').value.trim();
+    const purok = document.getElementById('purok').value.trim();
+    const category = document.getElementById('category').value;
+    const description = document.getElementById('description').value.trim();
+    if(!name || !purok || !description) return;
+
+    const newRequestData = {
+      title: description,
+      category: category,
+      purok: purok
+    };
+
+    fetch('/api/entries', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newRequestData)
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Server rejected the new submission.');
+      }
+      return response.json();
+    })
+    .then(result => {
+    
+      currentFilter = 'all';
+      [...filterGroup.children].forEach(b => b.setAttribute('aria-pressed', b.dataset.filter === 'all'));
+      render();
+
+      loadEntriesFromServer();
+
+      confirmMsg.hidden = false;
+      confirmMsg.textContent = `Recorded. Reference ${result.entry.ref} — keep this for follow-up.`;
+      form.reset();
+  })
+  .catch(error => {
+    console.error('Submission error:', error);
+    alert('Could not save request. Check server connection.');
+  });
+});
+
+    loadEntriesFromServer();
+    //const ref = `MLY-2026-${String(refCounter++).padStart(4,'0')}`;
+    //entries.unshift({ ref, title: description, category, purok, date: formatToday(), status: 'pending' });
+    //justAddedRef = ref;
+
+    // Persist the updated entries and notify admin pages.
+    //saveEntriesToStorage();
+
+  // Update a single request's status and persist the change. This function can be
+  // called by admin UI handlers (in admin.html) or anywhere else.
+  //function updateRequestStatus(ref, status){
+    //const entry = entries.find(e => e.ref === ref);
+    //if(!entry) return false;
+    //const old = entry.status;
+    //entry.status = status;
+    // Persist and notify other pages.
+    //saveEntriesToStorage();
+    // Re-render local UI.
+    //render();
+    //return old;
+  //}
+ 
+  // Initialize: load persisted entries (if any) and render.
+  //render();
+</script>
+</body>
+</html>
