@@ -238,7 +238,7 @@
         const payload = { status: newStatus };
         if (reason) payload.note = reason;
 
-        fetch(`/https://production-baranggay-registry.onrender.com/api/entries/${ref}`, {
+        fetch(`https://production-baranggay-registry.onrender.com/api/entries/${ref}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
