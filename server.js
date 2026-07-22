@@ -118,22 +118,24 @@ app.post('/api/entries', async (req, res) => {
     //res.status(201).json({ message: 'Entry saved successfully!', entry: newEntry });
 //});
 
-app.patch('/api/entries/:ref', (req, res) => {
-    const {ref} = req.params;
-    const {status, note} = req.body;
-    // Find target entry matching the reference code
-  const entry = entries.find(item => item.ref === ref);
+app.patch('/api/entries/:ref', async (req, res) => {
+  try {
+    const { ref } = req.params;
+    const { status, note } = req.body;
 
-  if (!entry) {
-    return res.status(404).json({ error: 'Record reference not found' });
+    const entry = await Entry.findOne({ ref });
+    if (!entry) {
+      return res.status(404).json({ error: 'Record reference not found' });
+    }
+
+    if (status) entry.status = status;
+    if (note) entry.note = note;
+    await entry.save();
+
+    res.json({ message: 'Record updated successfully!', entry });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to update entry' });
   }
-
-  // Dynamically update fields if provided in body
-  if (status) entry.status = status;
-  if (note) entry.note = note;
-
-  saveEntries();
-  res.json({ message: 'Record updated successfully!', entry });
 });
 
 // --- Server Startup ---
