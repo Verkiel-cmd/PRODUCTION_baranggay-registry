@@ -284,7 +284,6 @@
        if(!entry) return false;
        entry.status = 'removed';
        entry.note = reason;
-       saveEntriesToStorage();
        renderAdminTable();
        return true;
     }
