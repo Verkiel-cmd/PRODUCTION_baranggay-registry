@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
  
      const entrySchema = new mongoose.Schema({
        ref: { type: String, required: true, unique: true },
-       fullname: { type: String, required: true, unique: true },
+       fullname: { type: String, required: true, },
        title: { type: String, required: true },
        category: { type: String, required: true },
        purok: { type: String, required: true },
