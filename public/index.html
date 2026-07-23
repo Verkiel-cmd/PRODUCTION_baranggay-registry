@@ -102,16 +102,16 @@
 <script>
   // `entries` is the source-of-truth list of requests. We persist it to `localStorage`
   // so other pages (like `admin.html`) can read and react to changes.
-  let entries = [];
+  //let entries = [];
 
   // Default sample data used if storage is empty or malformed.
-  const DEFAULT_ENTRIES = [
-    {ref:'MLY-2026-0231', title:'Streetlight out along Purok 4', category:'Infrastructure repair', purok:'Purok 4', date:'Jul 12, 2026', status:'pending'},
-    {ref:'MLY-2026-0230', title:'Barangay clearance for employment', category:'Document request', purok:'Purok 2', date:'Jul 11, 2026', status:'released'},
-    {ref:'MLY-2026-0229', title:'Loose dog roaming near school', category:'Peace & order', purok:'Purok 1', date:'Jul 10, 2026', status:'progress'},
-    {ref:'MLY-2026-0228', title:'Clogged drainage causing flooding', category:'Infrastructure repair', purok:'Purok 6', date:'Jul 9, 2026', status:'urgent'},
-    {ref:'MLY-2026-0227', title:'Request for indigency certificate', category:'Document request', purok:'Purok 3', date:'Jul 8, 2026', status:'released'},
-  ];
+  //const DEFAULT_ENTRIES = [
+    //{ref:'MLY-2026-0231', title:'Streetlight out along Purok 4', category:'Infrastructure repair', purok:'Purok 4', date:'Jul 12, 2026', status:'pending'},
+    //{ref:'MLY-2026-0230', title:'Barangay clearance for employment', category:'Document request', purok:'Purok 2', date:'Jul 11, 2026', status:'released'},
+    //{ref:'MLY-2026-0229', title:'Loose dog roaming near school', category:'Peace & order', purok:'Purok 1', date:'Jul 10, 2026', status:'progress'},
+    //{ref:'MLY-2026-0228', title:'Clogged drainage causing flooding', category:'Infrastructure repair', purok:'Purok 6', date:'Jul 9, 2026', status:'urgent'},
+    //{ref:'MLY-2026-0227', title:'Request for indigency certificate', category:'Document request', purok:'Purok 3', date:'Jul 8, 2026', status:'released'},
+  //];
 
   // We synchronize pages using `localStorage` + the `storage` event.
   // This is simpler than BroadcastChannel and works in all modern browsers.
@@ -252,9 +252,7 @@
     console.error('Submission error:', error);
     alert('Could not save request. Check server connection.');
   });
-});
-
-    loadEntriesFromServer();
+}); loadEntriesFromServer();
     //const ref = `MLY-2026-${String(refCounter++).padStart(4,'0')}`;
     //entries.unshift({ ref, title: description, category, purok, date: formatToday(), status: 'pending' });
     //justAddedRef = ref;
