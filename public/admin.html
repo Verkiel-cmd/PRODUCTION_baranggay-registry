@@ -7,8 +7,26 @@
 </head>
 <body>
 
+<!--
+  SVG LIQUID WARP FILTER
+  Add this hidden SVG anywhere in the <body> (before the admin-box works fine).
+  It provides a turbulence-based displacement filter that warps the box shape.
+
+  <svg style="display:none">
+    <filter id="warp">
+      <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="3" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="15"/>
+    </filter>
+  </svg>
+
+  Tweaks:
+    - baseFrequency: 0.01 (gentle) → 0.03 (intense ripples)
+    - scale: 10 (subtle) → 30 (heavy distortion)
+    - numOctaves: 2 (simple) → 5 (detailed noise)
+-->
 
   <div id="loginSection" class="admin-box">
+    <div class="capital">P</div>
     <h1>Admin Login</h1>
     <form class="inside-login"id="adminLogin" novalidate>
       <label class="username">Username: <input id="adminUser" value=""></label>
