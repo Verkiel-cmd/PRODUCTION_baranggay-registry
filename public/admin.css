@@ -250,6 +250,41 @@ background-color: #b5d4b5;
     color: #1C2B45;
 }
 
+/* Note input field in removed records table */
+.note-input {
+    width: 100%;
+    min-width: 150px;
+    padding: 0.375rem 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: #212529;
+    background-color: #fff;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.note-input:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    outline: none;
+}
+
+/* Save Note button in removed records table */
+.save-note-btn {
+    padding: 0.375rem 0.75rem;
+    background-color: var(--green);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+.save-note-btn:hover {
+    background-color: #2d4432;
+}
+
 
 /*MEDIA RESPONSIVENESS*/
 @media (min-width: 300px) and (max-width: 500px) {
