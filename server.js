@@ -193,10 +193,6 @@ app.patch('/api/entries/:ref', authenticateAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Record reference not found' });
     }
 
-    if (status) entry.status = status;
-    if (note) entry.note = note;
-    await entry.save();
-
     res.json({ message: 'Record updated successfully!', entry });
   } catch (e) {
     console.error('PATCH error:', e.message);

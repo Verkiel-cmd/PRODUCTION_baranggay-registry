@@ -43,7 +43,7 @@
 
   <section id="adminBoard" style="display: none;">
     <h2>Admin Dashboard</h2>
-    <button class="btn-bt" onclick="logout()" style="margin-bottom:1rem;">Logout</button>
+    <button class="logout-board" onclick="logout()">Logout</button>
 
     <table class="table" id="requestsTable" border="1">
       <thead>
@@ -280,13 +280,13 @@ function showAdminDashboard() {
       } else {
         tbody.innerHTML = activeEntries.map(e => `
           <tr data-ref="${e.ref}">
-            <td class="cell-ref">${e.ref}</td>
-            <td class="cell-fullname">${e.fullname}</td>
-            <td class="cell-title">${e.title}</td>
-            <td class="cell-category">${e.category}</td>
-            <td class="cell-purok">${e.purok}</td>
-            <td class="cell-date">${e.date}</td>
-            <td class="cell-status">${e.status}</td>
+            <td class="cell-ref" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.ref}</td>
+            <td class="cell-fullname" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.fullname}</td>
+            <td class="cell-title" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.title}</td>
+            <td class="cell-category" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.category}</td>
+            <td class="cell-purok" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.purok}</td>
+            <td class="cell-date" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.date}</td>
+            <td class="cell-status" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.status}</td>
             <td class="cell-actions">
               <button class="action-btn" data-status="released">Release</button>
               <button class="action-btn" data-status="progress">In progress</button>
@@ -312,9 +312,9 @@ function showAdminDashboard() {
       } else {
         removedTbody.innerHTML = removedEntries.map(e => `
           <tr data-ref="${e.ref}">
-            <td class="cell-ref">${e.ref}</td>
-            <td class="cell-fullname">${e.fullname}</td>
-            <td class="cell-title">${e.title}</td>
+            <td class="cell-ref" style="font-weight: 500;">${e.ref}</td>
+            <td class="cell-fullname" style="font-weight: 500;">${e.fullname}</td>
+            <td class="cell-title" style="font-weight: 500;">${e.title}</td>
             <td class="cell-note">
               <input class="note-input" data-ref="${e.ref}" value="${e.note || ''}">
             </td>
@@ -376,7 +376,9 @@ function showAdminDashboard() {
         return response.json();
       })
       .then((data) => {
-        if (data) loadEntriesFromServer();
+        if (data) { loadEntriesFromServer();
+        alert('Note Updated!');
+        }
       })
       .catch(error => console.error('Note update error:', error));
     }

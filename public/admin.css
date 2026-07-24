@@ -132,7 +132,28 @@ h1{
     border-radius: 0.375rem;
     outline: none;
 }
-
+.logout-board{
+    display: block;
+    background-color: #fff;
+    border: 1px solid #ec9735;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    font-size: medium;
+    padding: 0.7rem;
+    width: 100%;
+    max-width: 10rem;
+    position: relative;
+    border-radius: 1rem;
+    margin-top: -3.5rem;
+    margin-right: 3rem;
+    float: right;
+    transform: translateY(1px);
+    transition: all 2s ease-in-out;
+    transition: transform 0.2s ease-in-out
+}
+.logout-board:hover{
+    transform: translateY(5px);
+}
 
 /*ALTERNATIVE STYLES INPUT*/
 
@@ -161,20 +182,30 @@ h1{
 
 .table{
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    border: 2px solid #1C2B45;
+    border: 1px solid #1C2B45;
     border-radius: 0.5rem;
     border-collapse: separate;
     border-spacing: 1rem;
 }
-th, td{
-padding: 0.5rem;
-border: 2px solid #1C2B45;
-border-radius: 0.5rem;
-margin: 1rem;
+td{
+    padding: 0.001rem 0.7rem 0.001rem 0.7rem;
+    border: 1px solid #1C2B45;
+    border-radius: 0.5rem;
+}
+th{
+    padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+    border: 1px solid #1C2B45;
+    border-radius: 0.5rem;
+}
+.cell-actions{
+    border: none;
+}
+.cell-note{
+    border: none;
 }
 h2{
     padding-left: 2.2rem;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Outfit', sans-serif;
 }
 .action-btn{
     padding: 8px 12px;
@@ -182,7 +213,7 @@ h2{
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     font-weight: 500;
     border-radius: 0.7rem;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Outfit', sans-serif;
     background-color: rgb(255, 255, 255);
     transform: translateY(5px);
     transition: transform 0.2s ease;
@@ -191,19 +222,19 @@ h2{
 .action-btn[data-status="released"] {
     border: 1px solid #26baff;
     box-shadow: 0 0 8px rgba(38, 186, 255, 0.6);
-  background-color: rgb(255, 255, 255);
+    background-color: rgb(255, 255, 255);
 }
 
 .action-btn[data-status="progress"] {
     border: 1px solid #a5a123;
-      box-shadow: 0 0 8px rgba(165, 161, 35, 0.6);
-  background-color: rgb(255, 255, 255);
+    box-shadow: 0 0 8px rgba(165, 161, 35, 0.6);
+    background-color: rgb(255, 255, 255);
 }
 
 .action-btn[data-status="urgent"] {
     border: 1px solid #f32c2c;
     box-shadow: 0 0 8px rgba(243, 44, 44, 0.6);
-  background-color: rgb(255, 255, 255);
+    background-color: rgb(255, 255, 255);
 }
 .action-btn:hover[data-status="released"]{
     background-color: #a2daff;
@@ -218,6 +249,7 @@ h2{
     transform: translateY(1px)
 }
 .apply-status{
+    font-family: 'Outfit', sans-serif;
     padding: 0.5rem;
     background-color: whitesmoke;
     border-radius: 0.5rem;
@@ -227,9 +259,10 @@ h2{
     transition: background-color 0.3s ease, transform 0.3s ease;
 }
 .apply-status:hover{
-background-color: #b5d4b5;
+    background-color: #b5d4b5;
 }
 .delete-btn{
+    font-family: 'Outfit', sans-serif;
     padding: 0.5rem;
     margin-left: 0.25rem;
     background-color: #fff5f5;
@@ -244,16 +277,17 @@ background-color: #b5d4b5;
     transform: translateY(1px);
 }
 .status-select{
+    margin: 0.5rem;
     padding: 0.5rem;
     border-radius: 0.3rem;
     border: 1px solid #1C2B45;
     color: #1C2B45;
+    font-family: 'Outfit', sans-serif;
 }
 
 /* Note input field in removed records table */
 .note-input {
-    width: 100%;
-    min-width: 150px;
+    font-family: 'Outfit', sans-serif;
     padding: 0.375rem 0.5rem;
     border: 1px solid #ced4da;
     border-radius: 0.375rem;
@@ -271,13 +305,13 @@ background-color: #b5d4b5;
 
 /* Save Note button in removed records table */
 .save-note-btn {
-    padding: 0.375rem 0.75rem;
+    padding: 0.375rem 1rem;
     background-color: var(--green);
     color: white;
     border: none;
     border-radius: 0.5rem;
     cursor: pointer;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Outfit', sans-serif;
     font-weight: 500;
     transition: background-color 0.3s ease;
 }
