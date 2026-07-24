@@ -22,7 +22,8 @@
   }
   .capital::after{
     content:'';
-    position:absolute; inset:4px;
+    position:absolute; 
+    inset:4px;
     border:1px solid var(--gold);
     border-radius:50%;
   }
@@ -46,9 +47,11 @@
 }
 .admin-box::after{
     content:'';
-    position:absolute; inset:4px;
+    position:absolute; 
+    inset:4px;
     border:1px solid var(--gold);
     border-radius: 4%;
+    pointer-events: none;
   }
 .inside-login {
   padding-bottom: 1rem;
