@@ -180,7 +180,15 @@ app.patch('/api/entries/:ref', authenticateAdmin, async (req, res) => {
     const { ref } = req.params;
     const { status, note } = req.body;
 
-    const entry = await Entry.findOne({ ref });
+    const update = {};
+    if (status) update.status = status;
+    if (note !== undefined) update.note = note;
+
+    const entry = await Entry.findOneAndUpdate(
+    { ref },
+    { $set: update },
+    { new: true }
+  );
     if (!entry) {
       return res.status(404).json({ error: 'Record reference not found' });
     }
@@ -191,6 +199,7 @@ app.patch('/api/entries/:ref', authenticateAdmin, async (req, res) => {
 
     res.json({ message: 'Record updated successfully!', entry });
   } catch (e) {
+    console.error('PATCH error:', e.message);
     res.status(500).json({ error: 'Failed to update entry' });
   }
 });
