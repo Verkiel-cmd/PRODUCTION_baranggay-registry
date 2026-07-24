@@ -1,5 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const Admin = require('./models/admin');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -21,6 +24,59 @@ app.use(cors());
 
 conn.once('open', () => {
   console.log('Successfully connected to the database!');
+});
+
+function authenticateAdmin(req, res, next) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  // "Bearer eyJhbG..." → split by space → take second part → "eyJhbG..."
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // decoded = { username: 'admin', iat: ..., exp: ... }
+    req.admin = decoded;  // attach admin info to request
+    next();               // let the request continue to the route
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+}
+
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password required' });
+    }
+
+    const admin = await Admin.findOne({ username });
+    if (!admin) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const isMatch = await bcrypt.compare(password, admin.password);
+    // bcrypt.compare('admin123', '$2a$10$xYz...') → true or false
+
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    /*TOKEN*/
+    const token = jwt.sign(
+      { username: admin.username },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.json({ token });
+  } catch (err) {
+    res.status(500).json({ error: 'Login failed' });
+  }
 });
 
 //const DATA_FILE = path.join(__dirname, 'data.json');
@@ -119,7 +175,7 @@ app.post('/api/entries', async (req, res) => {
     //res.status(201).json({ message: 'Entry saved successfully!', entry: newEntry });
 //});
 
-app.patch('/api/entries/:ref', async (req, res) => {
+app.patch('/api/entries/:ref', authenticateAdmin, async (req, res) => {
   try {
     const { ref } = req.params;
     const { status, note } = req.body;

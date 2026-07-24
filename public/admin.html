@@ -43,6 +43,7 @@
 
   <section id="adminBoard" hidden>
     <h2>Admin Dashboard</h2>
+    <button class="btn-bt" onclick="logout()" style="margin-bottom:1rem;">Logout</button>
 
     <table class="table" id="requestsTable" border="1">
       <thead>
@@ -133,30 +134,63 @@
   </section>
 
   <script>
+
+  document.getElementById('adminLogin').addEventListener('submit', async (evt) => {
+  evt.preventDefault();
+  const user = document.getElementById('adminUser').value;
+  const pass = document.getElementById('adminPass').value;
+
+  try {
+    const response = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: user, password: pass })
+    });
+
+    if (!response.ok) {
+      alert('Invalid credentials');
+      return;
+    }
+
+    const { token } = await response.json();
+    localStorage.setItem('adminToken', token);  // save for later
+    showAdminDashboard();
+  } catch (err) {
+    alert('Login failed. Check server connection.');
+  }
+});
+
+function showAdminDashboard() {
+  loginSection.hidden = true;
+  board.hidden = false;
+  loadEntriesFromServer();
+  renderAdminTable();
+}
+
     // Minimal client-side admin login (development only)
     // - Credentials: username 'admin' and password 'password' (matches the input value in the form)
     // - This is local-only and not secure. Replace with server-side auth for production.
-    document.getElementById('adminLogin').addEventListener('submit', (evt) => {
-      evt.preventDefault();
-      const user = document.getElementById('adminUser').value;
-      const pass = document.getElementById('adminPass').value;
+    //document.getElementById('adminLogin').addEventListener('submit', (evt) => {
+      //evt.preventDefault();
+      //const user = document.getElementById('adminUser').value;
+      //const pass = document.getElementById('adminPass').value;
       // Hard-coded check for development convenience
-      if (user === 'admin' && pass === 'password') {
+      //if (user === 'admin' && pass === 'password') {
         // hide the entire login section and reveal admin board
-        document.getElementById('loginSection').hidden = true;
-        const board = document.getElementById('adminBoard');
-        board.hidden = false;
+        //document.getElementById('loginSection').hidden = true;
+        //const board = document.getElementById('adminBoard');
+        //board.hidden = false;
         // After showing the board, load shared entries and render the table.
-        loadEntriesFromServer();
-        renderAdminTable();
+        //loadEntriesFromServer();
+        //renderAdminTable();
         // focus first control for keyboard users
-        const first = board.querySelector('.action-btn, .apply-status, .status-select');
-        if (first) first.focus();
-      } else {
+        //const first = board.querySelector('.action-btn, .apply-status, .status-select');
+        //if (first) first.focus();
+      //} else {
         // simple feedback; you can replace with inline message or aria-live region
-        alert('Invalid admin credentials');
-      }
-    });
+        //alert('Invalid admin credentials');
+      //}
+    //});
 
     // --- Data sync helpers (admin page) ---
     // Use `localStorage` + the `storage` event to synchronize entries between tabs.
@@ -257,19 +291,27 @@
       function updateRequestStatusOnServer(ref, newStatus, reason = null) {
         const payload = { status: newStatus };
         if (reason) payload.note = reason;
+        const token = localStorage.getItem('adminToken');
 
         fetch(`https://production-baranggay-registry.onrender.com/api/entries/${ref}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json',
+                     'Authorization': `Bearer ${token}`
+                  },
           body: JSON.stringify(payload)
         })
         .then(response => {
+          if (response.status === 401) {
+            localStorage.removeItem('adminToken');
+            loginSection.hidden = false;
+            board.hidden = true;
+            return;
+          }
           if (!response.ok) throw new Error('Server update failed');
           return response.json();
         })
-        .then(() => {
-          // Re-fetch data from server to keep UI in sync
-          loadEntriesFromServer();
+        .then((data) => {
+          if (data) loadEntriesFromServer();
         })
         .catch(error => console.error('Update error:', error));
       }
@@ -331,9 +373,19 @@
         updateRequestStatusOnServer(ref, 'removed', reason.trim());
       }
       }); 
-    // On initial load of admin page, load entries from server and render.
-    loadEntriesFromServer();
-    renderAdminTable();
+    // On initial load of admin page, check token and show dashboard or login.
+    const savedToken = localStorage.getItem('adminToken');
+    if (savedToken) {
+      showAdminDashboard();
+    }
+
+    function logout() {
+      localStorage.removeItem('adminToken');
+      loginSection.hidden = false;
+      board.hidden = true;
+      document.getElementById('adminUser').value = '';
+      document.getElementById('adminPass').value = '';
+    }
 
     // ADMIN PAGE — integration notes (comments only; no executable functions beyond login):
     // Loading data
