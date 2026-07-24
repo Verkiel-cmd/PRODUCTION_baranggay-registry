@@ -41,7 +41,7 @@
     Do NOT use this in production. Replace with real authentication when ready.
   -->
 
-  <section id="adminBoard" hidden>
+  <section id="adminBoard">
     <h2>Admin Dashboard</h2>
     <button class="btn-bt" onclick="logout()" style="margin-bottom:1rem;">Logout</button>
 
@@ -161,8 +161,8 @@
 });
 
 function showAdminDashboard() {
-  loginSection.hidden = true;
-  board.hidden = false;
+  loginSection.style.display = 'none';
+  board.style.display = 'block';
   loadEntriesFromServer();
   renderAdminTable();
 }
@@ -381,8 +381,8 @@ function showAdminDashboard() {
 
     function logout() {
       localStorage.removeItem('adminToken');
-      loginSection.hidden = false;
-      board.hidden = true;
+      loginSection.style.display = 'flex';
+      board.style.display = 'none';
       document.getElementById('adminUser').value = '';
       document.getElementById('adminPass').value = '';
     }
