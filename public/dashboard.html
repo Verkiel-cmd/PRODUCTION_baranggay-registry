@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="admin-table.css">
+</head>
+<body>
+
+    <section id="adminBoard">
+    <div class="board-header">
+    <h2>Admin Dashboard</h2>
+    <button class="logout-board" onclick="logout()">Logout</button>
+</div>
+    <table class="table" id="requestsTable" border="1">
+      <thead>
+        <tr>
+          <th>Ref</th>
+          <th>Full Name</th>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Purok</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="adminTableBody"></table>
+
+    <h2>Removed Records</h2>
+        <table class="table" id="removedTable">
+        <thead>
+            <tr>
+            <th>Ref</th>
+            <th>Full Name</th>
+            <th>Title</th>
+            <th>Note</th>
+            <th>Actions</th>
+            </tr>
+      </thead>
+      <tbody id="removedTableBody"></tbody></table>
+       </section>
+    <script>
+
+        const tbody = document.querySelector('#adminTableBody');
+        const removedTbody = document.querySelector('#removedTableBody');
+        let entries = [];
+
+        const savedToken = localStorage.getItem('adminToken');
+        if (!savedToken) {
+        window.location.href = 'admin.html'; 
+        }
+
+
+         function loadEntriesFromServer() {
+            fetch('https://production-baranggay-registry.onrender.com/api/entries')
+            .then(response => {
+            if (!response.ok) throw new Error('Failed to load server data');
+            return response.json();
+            })
+            .then(data => {
+            entries = data;
+            renderAdminTable(); // Redraw table with fresh data
+            })
+            .catch(error => console.error('Error fetching entries:', error));
+        }
+
+
+         function renderAdminTable(){
+        // --- Active entries (top table) ---
+        const activeEntries = entries.filter(e => e.status !== 'removed');
+
+      if (activeEntries.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No active records found.</td></tr>';
+      } else {
+        tbody.innerHTML = activeEntries.map(e => `
+          <tr data-ref="${e.ref}">
+            <td class="cell-ref" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.ref}</td>
+            <td class="cell-fullname" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.fullname}</td>
+            <td class="cell-title" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.title}</td>
+            <td class="cell-category" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.category}</td>
+            <td class="cell-purok" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.purok}</td>
+            <td class="cell-date" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.date}</td>
+            <td class="cell-status" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.status}</td>
+            <td class="cell-actions">
+              <button class="action-btn" data-status="released">Release</button>
+              <button class="action-btn" data-status="progress">In progress</button>
+              <button class="action-btn" data-status="urgent">Urgent</button>
+              <select class="status-select">
+                <option value="pending" ${e.status === 'pending' ? 'selected' : ''}>pending</option>
+                <option value="progress" ${e.status === 'progress' ? 'selected' : ''}>in progress</option>
+                <option value="released" ${e.status === 'released' ? 'selected' : ''}>released</option>
+                <option value="urgent" ${e.status === 'urgent' ? 'selected' : ''}>urgent</option>
+              </select>
+              <button class="apply-status">Apply</button>
+              <button class="delete-btn">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // --- Removed entries (bottom table) ---
+      const removedEntries = entries.filter(e => e.status === 'removed');
+
+      if (removedEntries.length === 0) {
+        removedTbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No removed records.</td></tr>';
+      } else {
+        removedTbody.innerHTML = removedEntries.map(e => `
+          <tr data-ref="${e.ref}">
+            <td class="cell-ref" style="font-weight: 500;">${e.ref}</td>
+            <td class="cell-fullname" style="font-weight: 500;">${e.fullname}</td>
+            <td class="cell-title" style="font-weight: 500;">${e.title}</td>
+            <td class="cell-note">
+              <input class="note-input" data-ref="${e.ref}" value="${e.note || ''}">
+            </td>
+            <td class="cell-actions">
+              <button class="save-note-btn" data-ref="${e.ref}">Save Note</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+      function updateRequestStatusOnServer(ref, newStatus, reason = null) {
+        const payload = { status: newStatus };
+        if (reason) payload.note = reason;
+        const token = localStorage.getItem('adminToken');
+
+        fetch(`https://production-baranggay-registry.onrender.com/api/entries/${ref}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json',
+                     'Authorization': `Bearer ${token}`
+                  },
+          body: JSON.stringify(payload)
+        })
+        .then(response => {
+          if (response.status === 401) {
+            localStorage.removeItem('adminToken');
+            window.location.href = 'admin.html';
+            //loginSection.hidden = false;
+            //board.hidden = true;
+            return;
+          }
+          if (!response.ok) throw new Error('Server update failed');
+          return response.json();
+        })
+        .then((data) => {
+          if (data) loadEntriesFromServer();
+        })
+        .catch(error => console.error('Update error:', error));
+      }
+
+    // Update only the note field of an entry (used by the removed records section)
+    function updateNoteOnServer(ref, newNote) {
+      const token = localStorage.getItem('adminToken');
+      fetch(`https://production-baranggay-registry.onrender.com/api/entries/${ref}`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ note: newNote })
+      })
+      .then(response => {
+        if (response.status === 401) {
+          localStorage.removeItem('adminToken');
+          window.location.href = 'admin.html';
+          //loginSection.style.display = 'flex';
+          //board.style.display = 'none';
+          return;
+        }
+        if (!response.ok) throw new Error('Failed to update note');
+        return response.json();
+      })
+      .then((data) => {
+        if (data) { loadEntriesFromServer();
+        alert('Note Updated!');
+        }
+      })
+      .catch(error => console.error('Note update error:', error));
+    }
+
+    // Update a request's status by ref, persist, and broadcast.
+    // Returns the previous status (useful for undo).
+    //function updateRequestStatus(ref, status){
+      //const entry = entries.find(x => x.ref === ref);
+      //if(!entry) return null;
+      //const old = entry.status;
+      //entry.status = status;
+      //saveEntriesToStorage();
+      //renderAdminTable();
+      //return old;
+    //}
+
+// --- OLD VERSION: hard delete (no notes, no trace, fully erased) ---
+// function deleteRequest(ref){
+//   const index = entries.findIndex(x => x.ref === ref);
+//   if(index === -1) return false;
+//   entries.splice(index, 1);
+//   saveEntriesToStorage();
+//   renderAdminTable();
+//   return true;
+// }
+
+    // Remove a request by ref, persist the updated list, and re-render.
+    function deleteRequest(ref, reason){
+       const entry = entries.find(x => x.ref === ref);
+       if(!entry) return false;
+       entry.status = 'removed';
+       entry.note = reason;
+       renderAdminTable();
+       return true;
+    }
+
+    // Event delegation: handle clicks for quick-action buttons, apply buttons, and delete button.
+    tbody.addEventListener('click', (evt) => {
+      const btn = evt.target.closest('button');
+      if(!btn) return;
+      const tr = btn.closest('tr');
+      if(!tr) return;
+      const ref = tr.dataset.ref;
+      if(btn.classList.contains('action-btn')){
+        updateRequestStatusOnServer(ref, btn.dataset.status);
+      }else if(btn.classList.contains('apply-status')){
+        const select = tr.querySelector('.status-select');
+        if(select){
+          updateRequestStatusOnServer(ref, select.value);
+        }
+      }else if(btn.classList.contains('delete-btn')){
+        const reason = prompt(`Why are you removing request ${ref}? This will be shown to the requester.`);
+        if(reason === null) return;
+        if(reason.trim() === ''){
+          alert('Please enter a reason before removing.');
+          return;
+        }
+        deleteRequest(ref, reason.trim());
+        updateRequestStatusOnServer(ref, 'removed', reason.trim());
+      }
+      }); 
+
+    // Event delegation for the removed records table — handles Save Note clicks
+    removedTbody.addEventListener('click', (evt) => {
+      const btn = evt.target.closest('.save-note-btn');
+      if (!btn) return;
+      const ref = btn.dataset.ref;
+      const input = removedTbody.querySelector(`.note-input[data-ref="${ref}"]`);
+      if (!input) return;
+      const newNote = input.value;
+      updateNoteOnServer(ref, newNote);
+    });
+    loadEntriesFromServer();
+
+    function logout() {
+    localStorage.removeItem('adminToken');
+    window.location.href = 'admin.html';  // ← back to login
+}
+
+    </script>
+</body>
+</html>
