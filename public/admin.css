@@ -9,6 +9,7 @@
     --rule: rgba(28,43,69,.18);
   }
   body{
+    overflow: hidden;
     background-color: rgb(255, 234, 176);
   }
   .capital{
