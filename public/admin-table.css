@@ -3,6 +3,9 @@
 body{
     background-color: rgb(253, 253, 253);
 }
+:root{
+    --green:#3F5D46;
+}
 .board-header{
     display: flex;
     justify-content: space-between;
