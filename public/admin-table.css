@@ -1,6 +1,8 @@
-  body{
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+body{
     background-color: rgb(253, 253, 253);
-  }
+}
 .board-header{
     display: flex;
     justify-content: space-between;
