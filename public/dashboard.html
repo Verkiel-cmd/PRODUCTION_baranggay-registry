@@ -215,6 +215,42 @@
     }
 
     // Event delegation: handle clicks for quick-action buttons, apply buttons, and delete button.
+
+    // ============================================================
+// HOW dataset WORKS
+// ============================================================
+//
+// The browser automatically creates a `dataset` property on
+// every HTML element. It reads all `data-*` attributes and
+// puts them on that object. You don't create it — the browser gives it to you.
+//
+// RULE: strip "data-" from the HTML attribute name → that's the JS property.
+//
+//   HTML attribute          JS access
+//   ──────────────          ──────────────
+//   data-ref="MLY-2026-0233"  →  element.dataset.ref
+//   data-status="released"    →  element.dataset.status
+//   data-note="hello"         →  element.dataset.note
+//
+// EXAMPLE FLOW:
+//
+//   1. renderAdminTable() builds HTML as a string:
+//      tbody.innerHTML = `
+//        <tr data-ref="MLY-2026-0233">
+//          <button class="action-btn" data-status="released">Release</button>
+//        </tr>
+//      `
+//
+//   2. The browser parses that string and creates real DOM elements.
+//
+//   3. User clicks "Release" → your click listener catches it:
+//      - btn.closest('tr')  → finds the <tr> that contains the button
+//      - tr.dataset.ref     → reads "MLY-2026-0233" from the row
+//      - btn.dataset.status → reads "released" from the button
+//
+//   4. You now know WHICH entry and WHAT action → send to server.
+// ============================================================
+
     tbody.addEventListener('click', (evt) => {
       const btn = evt.target.closest('button');
       if(!btn) return;
