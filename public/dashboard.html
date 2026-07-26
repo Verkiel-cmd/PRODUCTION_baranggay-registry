@@ -67,13 +67,14 @@
         }
 
 
-         function renderAdminTable(){
+      function renderAdminTable(){
         // --- Active entries (top table) ---
         const activeEntries = entries.filter(e => e.status !== 'removed');
 
-      if (activeEntries.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No active records found.</td></tr>';
-      } else {
+        // --- if table no records display "no records" ---
+        if (activeEntries.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No active records found.</td></tr>';
+        } else {
         tbody.innerHTML = activeEntries.map(e => `
           <tr data-ref="${e.ref}">
             <td class="cell-ref" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.ref}</td>
