@@ -114,6 +114,7 @@ h1{
     border: 1px solid #ced4da;
     border-radius: 0.375rem;
     color: black;
+    font-family: 'Outfit', sans-serif;
     transition: border-color 1s ease-in-out,
                 box-shadow 0.15s ease-in-out;
 }
@@ -142,6 +143,7 @@ h1{
     background-color: #fff;
     border: 1px solid #ced4da;
     border-radius: 0.375rem;
+    font-family: 'Outfit', sans-serif;
     transition: border-color 1s ease-in-out,
                 box-shadow 0.15s ease-in-out;
 }
