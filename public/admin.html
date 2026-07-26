@@ -533,52 +533,69 @@
     //    - Save: localStorage.setItem('entries', JSON.stringify(entries));
     //    - Load: entries = JSON.parse(localStorage.getItem('entries') || '[]');
 
-     //FOR POP UP DESIGN STYLE
-         document.getElementById('adminLogin').addEventListener('submit', function (e) {
-            e.preventDefault();
+     
+         //FOR POP UP DESIGN STYLE==================================================================================================================================================================
+         var popupTimeout = null;
 
-            var user = document.getElementById('adminUser').value;
-            var pass = document.getElementById('adminPass').value;
+            document.getElementById('adminLogin').addEventListener('submit', function (e) {
+                e.preventDefault();
 
-            if (!user || !pass) {
-            showPopup('errorPopup');
-            return;
+                var user = document.getElementById('adminUser').value;
+                var pass = document.getElementById('adminPass').value;
+
+                if (!user || !pass) {
+                showPopup('errorPopup');
+                return;
+                }
+
+                if (user === 'admin' && pass === '1234') {
+                showPopup('successPopup');
+                } else {
+                showPopup('errorPopup');
+                }
+            });
+
+            function showPopup(id) {
+                // Close any open popup first — prevents stacking/ghost popups
+                var allPopups = document.querySelectorAll('.popup-overlay');
+                for (var i = 0; i < allPopups.length; i++) {
+                allPopups[i].style.display = 'none';
+                allPopups[i].classList.remove('popup-show', 'popup-hide');
+                }
+
+                // Clear any pending auto-close timer
+                if (popupTimeout) {
+                clearTimeout(popupTimeout);
+                popupTimeout = null;
+                }
+
+                var popup = document.getElementById(id);
+                popup.style.display = 'flex';
+                void popup.offsetWidth;
+                popup.classList.add('popup-show');
+
+                popupTimeout = setTimeout(function () {
+                hidePopup(id);
+                }, 3500);
             }
 
-            if (user === 'admin' && pass === '1234') {
-            showPopup('successPopup');
-            } else {
-            showPopup('errorPopup');
-            }
-        });
-
-        function showPopup(id) {
-            var popup = document.getElementById(id);
-            popup.style.display = 'flex';
-            popup.classList.remove('popup-hide');
-            void popup.offsetWidth;
-            popup.classList.add('popup-show');
-
-            setTimeout(function () {
-            popup.classList.remove('popup-show');
-            popup.classList.add('popup-hide');
-            setTimeout(function () {
+            function hidePopup(id) {
+                var popup = document.getElementById(id);
+                popup.classList.remove('popup-show');
+                popup.classList.add('popup-hide');
+                setTimeout(function () {
                 popup.style.display = 'none';
                 popup.classList.remove('popup-hide');
-            }, 700);
-            }, 3500);
-        }
+                }, 700);
+            }
 
-        function closePopup(id) {
-            var popup = document.getElementById(id);
-            popup.classList.remove('popup-show');
-            popup.classList.add('popup-hide');
-            setTimeout(function () {
-            popup.style.display = 'none';
-            popup.classList.remove('popup-hide');
-            }, 700);
-        }
-
+            function closePopup(id) {
+                if (popupTimeout) {
+                clearTimeout(popupTimeout);
+                popupTimeout = null;
+                }
+                hidePopup(id);
+            }
   </script>
 
 </body>
