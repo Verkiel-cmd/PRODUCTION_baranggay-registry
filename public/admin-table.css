@@ -172,3 +172,10 @@ h2{
 .logout-board:hover{
     transform: translateY(5px);
 }
+@media (min-width: 300px) and (max-width: 500px) {
+    .logout-board{
+       margin-left: 1rem;
+       padding: 1rem;
+    }
+    
+}
