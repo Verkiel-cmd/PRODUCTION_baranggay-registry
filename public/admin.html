@@ -35,6 +35,26 @@
       <button class="btn-bt" type="submit">Login</button>
     </form>
   </div>
+
+    <!-- ERROR POPUP -->
+  <div id="errorPopup" class="popup-overlay" style="display: none;">
+    <div class="popup-box popup-error">
+      <div class="popup-icon">✕</div>
+      <h2>Login Failed</h2>
+      <p>Invalid username or password. Please try again.</p>
+      <button class="error-btn popup-btn popup-btn-error" onclick="closePopup('errorPopup')">OK</button>
+    </div>
+  </div>
+
+  <!-- SUCCESS POPUP -->
+  <div id="successPopup" class="popup-overlay" style="display: none;">
+    <div class="popup-box popup-success">
+      <div class="popup-icon">✓</div>
+      <h2>Login Successful</h2>
+      <p>Welcome back! Redirecting...</p>
+      <button class="success-btn popup-btn popup-btn-success" onclick="closePopup('successPopup')">Continue</button>
+    </div>
+  </div>
   
 
   <!--
@@ -512,6 +532,53 @@
     // 6) If you want to persist changes without a backend, use `localStorage`:
     //    - Save: localStorage.setItem('entries', JSON.stringify(entries));
     //    - Load: entries = JSON.parse(localStorage.getItem('entries') || '[]');
+
+     //FOR POP UP DESIGN STYLE
+         document.getElementById('adminLogin').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            var user = document.getElementById('adminUser').value;
+            var pass = document.getElementById('adminPass').value;
+
+            if (!user || !pass) {
+            showPopup('errorPopup');
+            return;
+            }
+
+            if (user === 'admin' && pass === '1234') {
+            showPopup('successPopup');
+            } else {
+            showPopup('errorPopup');
+            }
+        });
+
+        function showPopup(id) {
+            var popup = document.getElementById(id);
+            popup.style.display = 'flex';
+            popup.classList.remove('popup-hide');
+            void popup.offsetWidth;
+            popup.classList.add('popup-show');
+
+            setTimeout(function () {
+            popup.classList.remove('popup-show');
+            popup.classList.add('popup-hide');
+            setTimeout(function () {
+                popup.style.display = 'none';
+                popup.classList.remove('popup-hide');
+            }, 700);
+            }, 3500);
+        }
+
+        function closePopup(id) {
+            var popup = document.getElementById(id);
+            popup.classList.remove('popup-show');
+            popup.classList.add('popup-hide');
+            setTimeout(function () {
+            popup.style.display = 'none';
+            popup.classList.remove('popup-hide');
+            }, 700);
+        }
+
   </script>
 
 </body>
