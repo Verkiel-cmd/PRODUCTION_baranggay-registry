@@ -58,7 +58,8 @@
   flex-direction: column;
   max-width: 400px;
   margin: auto;
-  padding: 2rem 0 1rem 0;
+  padding: 2rem 3rem 1rem 3rem;
+  
 }
 .admin-box::after{
     content:'';
@@ -204,7 +205,7 @@ h1{
   align-items: center;
   max-width: 400px;
   margin: 20rem auto;
-  padding: 2rem 0 1rem 0;
+  padding: 2rem 3rem 1rem 3rem;
 }
 .inside-login {
   padding-bottom: 1rem;
