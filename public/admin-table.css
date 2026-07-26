@@ -17,17 +17,19 @@ body{
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     border: 1px solid #1C2B45;
     border-radius: 0.5rem;
-    border-collapse: collapse;
+    border-collapse: separate;
 }
 td{
     padding: 0.001rem 0.7rem 0.001rem 0.7rem;
     border: 1px solid #1C2B45;
     border-radius: 0.5rem;
+    vertical-align: top;
 }
 th{
     padding: 0.5rem 0.5rem 0.5rem 0.5rem;
     border: 1px solid #1C2B45;
     border-radius: 0.5rem;
+    vertical-align: top;
 }
 .cell-actions{
     border: none;
