@@ -34,13 +34,13 @@ function authenticateAdmin(req, res, next) {
   }
 
   const token = authHeader.split(' ')[1];
-  // "Bearer eyJhbG..." → split by space → take second part → "eyJhbG..."
+  // "Bearer eyJhbG..."
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    // decoded = { username: 'admin', iat: ..., exp: ... }
-    req.admin = decoded;  // attach admin info to request
-    next();               // let the request continue to the route
+   
+    req.admin = decoded;  
+    next();               
   } catch (err) {
     return res.status(401).json({ error: 'Invalid or expired token' });
   }

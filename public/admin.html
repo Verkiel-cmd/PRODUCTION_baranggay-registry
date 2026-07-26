@@ -159,6 +159,24 @@
   
 
   <script>
+  //FUNCTIONS FOR POPUP - ON REVIEW
+    function hidePopup(id) {
+    var popup = document.getElementById(id);
+    popup.classList.remove('popup-show');
+    popup.classList.add('popup-hide');
+    setTimeout(function () {
+      popup.style.display = 'none';
+      popup.classList.remove('popup-hide');
+    }, 700);
+  }
+
+  function closePopup(id) {
+    if (popupTimeout) {
+      clearTimeout(popupTimeout);
+      popupTimeout = null;
+    }
+    hidePopup(id);
+  }
 
     
 
@@ -166,6 +184,10 @@
   evt.preventDefault();
   const user = document.getElementById('adminUser').value;
   const pass = document.getElementById('adminPass').value;
+
+  if (!user || !pass){
+    showPopup('errorPopup')
+  }
   
   //const savedToken = localStorage.getItem('adminToken');
   //if (!savedToken) {
@@ -185,17 +207,48 @@
     });
 
     if (!response.ok) {
-      alert('Invalid credentials');
+      showPopup('errorPopup');
       return;
     }
 
     const { token } = await response.json();
     localStorage.setItem('adminToken', token);
-    window.location.href = 'dashboard.html'; // save for later
+    showPopup('successPopup');
+
+    setTimeout(function () {
+    window.location.href = 'dashboard.html';
+    
+    }, 3500)
   } catch (err) {
-    alert('Login failed. Check server connection.');
+    showPopup('errorPopup');
   }
 });
+
+//FUNCTION FOR POPUP
+ var popupTimeout = null;
+
+  function showPopup(id) {
+    var allPopups = document.querySelectorAll('.popup-overlay');
+    for (var i = 0; i < allPopups.length; i++) {
+      allPopups[i].style.display = 'none';
+      allPopups[i].classList.remove('popup-show', 'popup-hide');
+    }
+
+    if (popupTimeout) {
+      clearTimeout(popupTimeout);
+      popupTimeout = null;
+    }
+
+    var popup = document.getElementById(id);
+    popup.style.display = 'flex';
+    void popup.offsetWidth;
+    popup.classList.add('popup-show');
+
+    popupTimeout = setTimeout(function () {
+      hidePopup(id);
+    }, 3500);
+  }
+ 
 
     // Minimal client-side admin login (development only)
     // - Credentials: username 'admin' and password 'password' (matches the input value in the form)
@@ -534,68 +587,7 @@
     //    - Load: entries = JSON.parse(localStorage.getItem('entries') || '[]');
 
      
-         //FOR POP UP DESIGN STYLE==================================================================================================================================================================
-         var popupTimeout = null;
 
-            document.getElementById('adminLogin').addEventListener('submit', function (e) {
-                e.preventDefault();
-
-                var user = document.getElementById('adminUser').value;
-                var pass = document.getElementById('adminPass').value;
-
-                if (!user || !pass) {
-                showPopup('errorPopup');
-                return;
-                }
-
-                if (user === 'admin' && pass === '1234') {
-                showPopup('successPopup');
-                } else {
-                showPopup('errorPopup');
-                }
-            });
-
-            function showPopup(id) {
-                // Close any open popup first — prevents stacking/ghost popups
-                var allPopups = document.querySelectorAll('.popup-overlay');
-                for (var i = 0; i < allPopups.length; i++) {
-                allPopups[i].style.display = 'none';
-                allPopups[i].classList.remove('popup-show', 'popup-hide');
-                }
-
-                // Clear any pending auto-close timer
-                if (popupTimeout) {
-                clearTimeout(popupTimeout);
-                popupTimeout = null;
-                }
-
-                var popup = document.getElementById(id);
-                popup.style.display = 'flex';
-                void popup.offsetWidth;
-                popup.classList.add('popup-show');
-
-                popupTimeout = setTimeout(function () {
-                hidePopup(id);
-                }, 3500);
-            }
-
-            function hidePopup(id) {
-                var popup = document.getElementById(id);
-                popup.classList.remove('popup-show');
-                popup.classList.add('popup-hide');
-                setTimeout(function () {
-                popup.style.display = 'none';
-                popup.classList.remove('popup-hide');
-                }, 700);
-            }
-
-            function closePopup(id) {
-                if (popupTimeout) {
-                clearTimeout(popupTimeout);
-                popupTimeout = null;
-                }
-                hidePopup(id);
-            }
   </script>
 
 </body>
