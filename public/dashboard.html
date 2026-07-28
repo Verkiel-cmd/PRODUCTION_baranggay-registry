@@ -7,8 +7,7 @@
     <link rel="stylesheet" href="admin-table.css">
 </head>
 <body>
-
-    <section id="adminBoard">
+    <section id="adminBoard" style="display: none;">
     <div class="board-header">
     <h2>Admin Dashboard</h2>
     <button class="logout-board" onclick="logout()">Logout</button>
@@ -41,8 +40,481 @@
       </thead>
       <tbody id="removedTableBody"></tbody></table>
        </section>
+
+<!--
     <script>
 
+        // ============================================================
+        // DOM REFERENCES
+        // ============================================================
+        // Grab references to the two table bodies where entries will be rendered.
+        // `tbody` holds active (non-removed) entries in the top table.
+        // `removedTbody` holds removed entries in the bottom "Removed Records" table.
+        // ============================================================
+        const tbody = document.querySelector('#adminTableBody');
+        const removedTbody = document.querySelector('#removedTableBody');
+
+        // ============================================================
+        // ENTRIES ARRAY
+        // ============================================================
+        // This array holds all entry objects fetched from the server.
+        // It is populated by loadEntriesFromServer() and used by
+        // renderAdminTable() to draw both the active and removed tables.
+        // Each entry has: ref, fullname, title, category, purok, date, status, note
+        // ============================================================
+        let entries = [];
+
+        // ============================================================
+        // ANTI-FLASH AUTH GUARD — STEP 1: CHECK FOR TOKEN
+        // ============================================================
+        // When this page loads, the browser has already rendered the full
+        // HTML (including the dashboard table, buttons, and all content)
+        // BEFORE this JavaScript runs. That means for a split second,
+        // even an unauthenticated user could SEE the admin dashboard
+        // before being redirected back to the login page.
+        //
+        // To prevent this "flash" of sensitive content, we do TWO things:
+        //
+        //    STEP 1 (THIS BLOCK): Check if a valid JWT token exists in
+        //    localStorage under the key 'adminToken'. This token is set
+        //    by admin.html after a successful login. If the token is NOT
+        //    found, the user has not logged in and must be sent back to
+        //    the admin login page immediately — no dashboard content
+        //    should ever be visible to them.
+        //
+        //    STEP 2 (BELOW): If the token IS found, we reveal the
+        //    dashboard section that was hidden by default in the HTML.
+        //    See the STEP 2 block further down for details.
+        //
+        // WHY localStorage?
+        //    - localStorage persists across page reloads and tab closes.
+        //    - It is scoped to the origin (protocol + domain + port), so
+        //      tokens set on Netlify's domain stay on Netlify's domain.
+        //    - The token is a JWT (JSON Web Token) issued by the server
+        //      after verifying admin credentials. It is sent with every
+        //      authenticated API request as a Bearer token in the
+        //      Authorization header.
+        //
+        // WHY REDIRECT INSTEAD OF HIDE?
+        //    - If we just hid the content, the page would still be loaded
+        //      and the DOM would still contain the dashboard HTML. A
+        //      technically savvy user could inspect the DOM and see it.
+        //    - By redirecting to admin.html, we completely leave this
+        //      page — no dashboard DOM exists in the browser at all.
+        // ============================================================
+        const savedToken = localStorage.getItem('adminToken');
+        if (!savedToken) {
+            // No token found → user is not authenticated.
+            // Immediately navigate back to the admin login page.
+            // This is a CLIENT-SIDE guard only — it does not protect
+            // against API calls made directly (the server enforces
+            // auth via JWT verification on protected endpoints).
+            window.location.href = 'admin.html';
+        }
+
+        // ============================================================
+        // ANTI-FLASH AUTH GUARD — STEP 2: REVEAL DASHBOARD
+        // ============================================================
+        // If execution reaches this line, it means the token check above
+        // did NOT redirect — the user has a valid token in localStorage.
+        //
+        // The dashboard <section id="adminBoard"> was set to
+        // `style="display: none;"` in the HTML so that it is completely
+        // invisible when the page first loads. No content is rendered
+        // on screen — no table, no buttons, no headings, nothing.
+        //
+        // NOW that we've confirmed the user is authenticated, we flip
+        // the display to 'block', making the entire dashboard visible.
+        //
+        // TIMING:
+        //    - This code runs synchronously in the <script> tag.
+        //    - The browser will not repaint the screen until this script
+        //      finishes executing. So the user will never see a flash
+        //      of the hidden content being revealed — it goes from
+        //      invisible → visible in a single, atomic render frame.
+        //
+        // SECURITY NOTE:
+        //    - This is a UX protection, NOT a security boundary.
+        //    - The real security is enforced server-side: every PATCH
+        //      request to update entries requires a valid JWT token
+        //      in the Authorization header. Without it, the server
+        //      returns 401 and the client redirects to admin.html.
+        //    - The display:none trick just prevents casual visual
+        //      exposure of the dashboard to non-admin users.
+        // ============================================================
+        document.getElementById('adminBoard').style.display = 'block';
+
+        // ============================================================
+        // LOAD ENTRIES FROM SERVER
+        // ============================================================
+        // Fetches all entries (both active and removed) from the
+        // backend API. The server returns a JSON array of entry objects.
+        //
+        // ENDPOINT: GET /api/entries
+        //    - This is a PUBLIC endpoint (no auth required) because
+        //      the public homepage (index.html) also needs to display
+        //      active entries for citizens to view.
+        //    - Returns entries sorted by date (newest first).
+        //
+        // FLOW:
+        //    1. fetch() sends a GET request to the production server.
+        //    2. Response is parsed as JSON.
+        //    3. The `entries` array is populated with the data.
+        //    4. renderAdminTable() is called to draw both tables.
+        //
+        // ERROR HANDLING:
+        //    - If the server is down or returns an error, the catch
+        //      block logs the error to the console. The tables will
+        //      show "No active records found." and "No removed records."
+        //      as fallback states (set by renderAdminTable).
+        // ============================================================
+         function loadEntriesFromServer() {
+            fetch('https://production-baranggay-registry.onrender.com/api/entries')
+            .then(response => {
+            if (!response.ok) throw new Error('Failed to load server data');
+            return response.json();
+            })
+            .then(data => {
+            entries = data;
+            renderAdminTable(); // Redraw table with fresh data
+            })
+            .catch(error => console.error('Error fetching entries:', error));
+        }
+
+
+        // ============================================================
+        // RENDER ADMIN TABLE
+        // ============================================================
+        // Splits the entries array into two groups and renders each
+        // into its respective table:
+        //
+        //    1. ACTIVE ENTRIES (top table, #adminTableBody):
+        //       - Includes all entries where status !== 'removed'
+        //       - Each row shows: Ref, Full Name, Title, Category,
+        //         Purok, Date, Status, and Action buttons
+        //       - Action buttons: Release, In Progress, Urgid, a
+        //         status dropdown + Apply, and Delete
+        //       - Each row has data-ref, each button has data-status
+        //         for event delegation (see click handler below)
+        //
+        //    2. REMOVED ENTRIES (bottom table, #removedTableBody):
+        //       - Includes all entries where status === 'removed'
+        //       - Each row shows: Ref, Full Name, Title, Note (editable
+        //         input field), and a Save Note button
+        //       - Removed entries are kept in the system (soft delete)
+        //         so the admin can add notes explaining why they were
+        //         removed. This creates an audit trail.
+        //
+        // TEMPLATE LITERALS:
+        //    - Uses ES6 template literals (backtick strings) to
+        //      generate HTML dynamically from the entries array.
+        //    - The .join('') at the end converts the array of row
+        //      strings into a single HTML string.
+        //
+        // EMPTY STATES:
+        //    - If no active entries exist, shows a centered message:
+        //      "No active records found."
+        //    - If no removed entries exist, shows:
+        //      "No removed records."
+        // ============================================================
+      function renderAdminTable(){
+        // --- Active entries (top table) ---
+        const activeEntries = entries.filter(e => e.status !== 'removed');
+
+        // --- if table no records display "no records" ---
+        if (activeEntries.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No active records found.</td></tr>';
+        } else {
+        tbody.innerHTML = activeEntries.map(e => `
+          <tr data-ref="${e.ref}">
+            <td class="cell-ref" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.ref}</td>
+            <td class="cell-fullname" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.fullname}</td>
+            <td class="cell-title" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.title}</td>
+            <td class="cell-category" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.category}</td>
+            <td class="cell-purok" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.purok}</td>
+            <td class="cell-date" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.date}</td>
+            <td class="cell-status" style="font-weight: 500; font-family: 'Outfit', sans-serif;">${e.status}</td>
+            <td class="cell-actions">
+              <button class="action-btn" data-status="released">Release</button>
+              <button class="action-btn" data-status="progress">In progress</button>
+              <button class="action-btn" data-status="urgent">Urgent</button>
+              <select class="status-select">
+                <option value="pending" ${e.status === 'pending' ? 'selected' : ''}>pending</option>
+                <option value="progress" ${e.status === 'progress' ? 'selected' : ''}>in progress</option>
+                <option value="released" ${e.status === 'released' ? 'selected' : ''}>released</option>
+                <option value="urgent" ${e.status === 'urgent' ? 'selected' : ''}>urgent</option>
+              </select>
+              <button class="apply-status">Apply</button>
+              <button class="delete-btn">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // --- Removed entries (bottom table) ---
+      const removedEntries = entries.filter(e => e.status === 'removed');
+
+      if (removedEntries.length === 0) {
+        removedTbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No removed records.</td></tr>';
+      } else {
+        removedTbody.innerHTML = removedEntries.map(e => `
+          <tr data-ref="${e.ref}">
+            <td class="cell-ref" style="font-weight: 500;">${e.ref}</td>
+            <td class="cell-fullname" style="font-weight: 500;">${e.fullname}</td>
+            <td class="cell-title" style="font-weight: 500;">${e.title}</td>
+            <td class="cell-note">
+              <input class="note-input" data-ref="${e.ref}" value="${e.note || ''}">
+            </td>
+            <td class="cell-actions">
+              <button class="save-note-btn" data-ref="${e.ref}">Save Note</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+        // ============================================================
+        // UPDATE ENTRY STATUS ON SERVER
+        // ============================================================
+        // Sends a PATCH request to the server to change an entry's
+        // status (and optionally add a note/reason).
+        //
+        // ENDPOINT: PATCH /api/entries/:ref
+        //    - :ref is the unique reference ID of the entry (e.g. MLY-2026-0233)
+        //    - Requires Authorization: Bearer <token> header
+        //    - Body: { status: "released" | "progress" | "urgent" | "removed",
+        //              note: "optional reason" }
+        //
+        // AUTH FAILURE (401):
+        //    - If the server returns 401, the token is invalid or expired.
+        //    - We remove the token from localStorage and redirect to
+        //      admin.html so the user must log in again.
+        //
+        // SUCCESS:
+        //    - After a successful update, we re-fetch all entries from
+        //      the server and re-render the tables to reflect the change.
+        // ============================================================
+      function updateRequestStatusOnServer(ref, newStatus, reason = null) {
+        const payload = { status: newStatus };
+        if (reason) payload.note = reason;
+        const token = localStorage.getItem('adminToken');
+
+        fetch(`https://production-baranggay-registry.onrender.com/api/entries/${ref}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json',
+                     'Authorization': `Bearer ${token}`
+                  },
+          body: JSON.stringify(payload)
+        })
+        .then(response => {
+          if (response.status === 401) {
+            localStorage.removeItem('adminToken');
+            window.location.href = 'admin.html';
+            return;
+          }
+          if (!response.ok) throw new Error('Server update failed');
+          return response.json();
+        })
+        .then((data) => {
+          if (data) loadEntriesFromServer();
+        })
+        .catch(error => console.error('Update error:', error));
+      }
+
+        // ============================================================
+        // UPDATE NOTE ON SERVER
+        // ============================================================
+        // Specifically updates ONLY the note field of an entry.
+        // Used by the "Removed Records" section where admins can add
+        // or edit explanatory notes on removed entries.
+        //
+        // ENDPOINT: PATCH /api/entries/:ref
+        //    - Same endpoint as status update, but only sends { note: "..." }
+        //    - Also requires Authorization header
+        //
+        // On success, re-fetches entries and shows a browser alert
+        // confirming the note was saved.
+        // ============================================================
+    function updateNoteOnServer(ref, newNote) {
+      const token = localStorage.getItem('adminToken');
+      fetch(`https://production-baranggay-registry.onrender.com/api/entries/${ref}`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ note: newNote })
+      })
+      .then(response => {
+        if (response.status === 401) {
+          localStorage.removeItem('adminToken');
+          window.location.href = 'admin.html';
+          return;
+        }
+        if (!response.ok) throw new Error('Failed to update note');
+        return response.json();
+      })
+      .then((data) => {
+        if (data) { loadEntriesFromServer();
+        alert('Note Updated!');
+        }
+      })
+      .catch(error => console.error('Note update error:', error));
+    }
+
+        // ============================================================
+        // DELETE REQUEST (SOFT DELETE)
+        // ============================================================
+        // Changes an entry's status to 'removed' and sets its note
+        // to the reason provided by the admin. This is a SOFT DELETE
+        // — the entry is NOT erased from the database. It is moved
+        // to the "Removed Records" section where it can still be
+        // viewed and its note can be edited.
+        //
+        // The admin is prompted for a reason via browser prompt().
+        // If they cancel or enter an empty string, the delete is
+        // aborted. This ensures every removal has a documented reason.
+        //
+        // NOTE: This function only updates the local `entries` array
+        // and re-renders the table. The actual server-side update is
+        // handled by updateRequestStatusOnServer() which is called
+        // right after this function in the click handler.
+        // ============================================================
+    function deleteRequest(ref, reason){
+       const entry = entries.find(x => x.ref === ref);
+       if(!entry) return false;
+       entry.status = 'removed';
+       entry.note = reason;
+       renderAdminTable();
+       return true;
+    }
+
+        // ============================================================
+        // CLICK HANDLER — ACTIVE ENTRIES TABLE (EVENT DELEGATION)
+        // ============================================================
+        // Uses EVENT DELEGATION on the <tbody> element. Instead of
+        // attaching a click listener to every single button (which
+        // would be hundreds if there are many entries), we attach
+        // ONE listener to the parent <tbody> and check what was
+        // clicked using event.target.closest().
+        //
+        // HOW EVENT DELEGATION WORKS:
+        //    1. A click happens on a <button> inside a <tr> inside <tbody>
+        //    2. The event "bubbles up" from the button → tr → tbody
+        //    3. Our listener on <tbody> catches it
+        //    4. evt.target.closest('button') finds the actual button clicked
+        //    5. btn.closest('tr') finds the row containing that button
+        //    6. tr.dataset.ref reads the data-ref attribute (the entry ID)
+        //
+        // THREE BUTTON TYPES HANDLED:
+        //
+        //    A) QUICK-ACTION BUTTONS (.action-btn):
+        //       - "Release", "In Progress", "Urgent"
+        //       - Each has a data-status attribute with the target status
+        //       - Calls updateRequestStatusOnServer(ref, btn.dataset.status)
+        //
+        //    B) APPLY BUTTON (.apply-status):
+        //       - Works with the <select> dropdown next to it
+        //       - Reads the selected value from the dropdown
+        //       - Calls updateRequestStatusOnServer(ref, select.value)
+        //
+        //    C) DELETE BUTTON (.delete-btn):
+        //       - Prompts the admin for a removal reason
+        //       - Validates the reason is not empty
+        //       - Calls deleteRequest() for local state update
+        //       - Calls updateRequestStatusOnServer() for server update
+        // ============================================================
+
+    tbody.addEventListener('click', (evt) => {
+      const btn = evt.target.closest('button');
+      if(!btn) return;
+      const tr = btn.closest('tr');
+      if(!tr) return;
+      const ref = tr.dataset.ref;
+      if(btn.classList.contains('action-btn')){
+        updateRequestStatusOnServer(ref, btn.dataset.status);
+      }else if(btn.classList.contains('apply-status')){
+        const select = tr.querySelector('.status-select');
+        if(select){
+          updateRequestStatusOnServer(ref, select.value);
+        }
+      }else if(btn.classList.contains('delete-btn')){
+        const reason = prompt(`Why are you removing request ${ref}? This will be shown to the requester.`);
+        if(reason === null) return;
+        if(reason.trim() === ''){
+          alert('Please enter a reason before removing.');
+          return;
+        }
+        deleteRequest(ref, reason.trim());
+        updateRequestStatusOnServer(ref, 'removed', reason.trim());
+      }
+      }); 
+
+        // ============================================================
+        // CLICK HANDLER — REMOVED RECORDS TABLE (EVENT DELEGATION)
+        // ============================================================
+        // Handles the "Save Note" button clicks in the removed entries
+        // table. When clicked:
+        //    1. Finds the button via .closest('.save-note-btn')
+        //    2. Reads the entry ref from btn.dataset.ref
+        //    3. Finds the <input> field with the matching data-ref
+        //    4. Reads the current value of that input
+        //    5. Calls updateNoteOnServer(ref, newNote) to save it
+        //
+        // This allows admins to add/edit explanatory notes on removed
+        // entries, creating an audit trail for why entries were removed.
+        // ============================================================
+    removedTbody.addEventListener('click', (evt) => {
+      const btn = evt.target.closest('.save-note-btn');
+      if (!btn) return;
+      const ref = btn.dataset.ref;
+      const input = removedTbody.querySelector(`.note-input[data-ref="${ref}"]`);
+      if (!input) return;
+      const newNote = input.value;
+      updateNoteOnServer(ref, newNote);
+    });
+
+        // ============================================================
+        // INITIAL DATA LOAD
+        // ============================================================
+        // Fetches all entries from the server and renders the tables.
+        // This is called once when the page loads (after the auth
+        // guard confirms the user is authenticated and the dashboard
+        // section has been revealed).
+        //
+        // Note: This function is also called after every successful
+        // PATCH update (status change or note edit) to keep the UI
+        // in sync with the server state.
+        // ============================================================
+    loadEntriesFromServer();
+
+        // ============================================================
+        // LOGOUT FUNCTION
+        // ============================================================
+        // Clears the admin token from localStorage and redirects to
+        // the admin login page. This effectively "logs out" the user
+        // because:
+        //    1. The token is removed → no more authenticated requests
+        //    2. If the user navigates back to dashboard.html, the
+        //       auth guard (STEP 1 above) will find no token and
+        //       redirect them to admin.html again
+        //
+        // This function is called by the "Logout" button in the
+        // dashboard header: <button onclick="logout()">Logout</button>
+        // ============================================================
+    function logout() {
+    localStorage.removeItem('adminToken');
+    window.location.href = 'admin.html';
+}
+
+    </script>
+And the HTML section header change on line 11:
+<section id="adminBoard" style="display: none;">
+-->
+
+    <script>
+
+        document.getElementById('adminBoard').style.display = 'block';
         const tbody = document.querySelector('#adminTableBody');
         const removedTbody = document.querySelector('#removedTableBody');
         let entries = [];
