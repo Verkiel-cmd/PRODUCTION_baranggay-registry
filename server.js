@@ -146,7 +146,7 @@ const conn = mongoose.connection;
     //if (!origin || allowedOrigins.includes(origin)) {
       //callback(null, true);
     //} else {
-      c//allback(new Error('Not allowed by CORS'));
+      //allback(new Error('Not allowed by CORS'));
     //}
   //}
 //}))
