@@ -331,7 +331,8 @@ app.post('/api/entries', async (req, res) => {
            }
  
            const count = await Entry.countDocuments();
-           const newRef = `MLY-2026-${String(232 + count).padStart(4, '0')}`;
+           const newRef = `MLY-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+           /*const newRef = `MLY-2026-${String(232 + count).padStart(4, '0')}`;*/
  
            const newEntry = new Entry({
              ref: newRef,
@@ -339,7 +340,7 @@ app.post('/api/entries', async (req, res) => {
              title,
              category,
              purok,
-             date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+             date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'Asia/Manila' }),
              status: 'pending'
            });
  
