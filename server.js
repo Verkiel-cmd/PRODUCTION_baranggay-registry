@@ -323,16 +323,45 @@ app.get('/api/entries', async (req, res) => {
     //res.json(entries);
 //});
 
-app.post('/api/entries', async (req, res) => {
+//app.post('/api/entries', async (req, res) => {
+         //try {
+           //const { fullname, title, category, purok } = req.body;
+           //if (!fullname || !title || !category || !purok) {
+             //return res.status(400).json({ error: 'Missing required request fields.' });
+           //}
+ 
+           //const count = await Entry.countDocuments();
+           //const newRef = `MLY-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+           //const newRef = `MLY-2026-${String(232 + count).padStart(4, '0')}`;
+ 
+           //const newEntry = new Entry({
+             //ref: newRef,
+             //fullname,
+             //title,
+             //category,
+             //purok,
+             //date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'Asia/Manila' }),
+             //status: 'pending'
+           //});
+ 
+           //await newEntry.save();
+           //res.status(201).json({ message: 'Entry saved successfully!', entry: newEntry });
+         //} catch (e) {
+           //res.status(500).json({ error: 'Failed to save entry' });
+         //}
+       //});
+
+       app.post('/api/entries', async (req, res) => {
          try {
            const { fullname, title, category, purok } = req.body;
            if (!fullname || !title || !category || !purok) {
              return res.status(400).json({ error: 'Missing required request fields.' });
            }
  
-           const count = await Entry.countDocuments();
-           const newRef = `MLY-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-           /*const newRef = `MLY-2026-${String(232 + count).padStart(4, '0')}`;*/
+           const now = new Date();
+           const year = now.toLocaleDateString('en-US', { year: 'numeric', timeZone: 'Asia/Manila' });
+           const md = now.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', timeZone: 'Asia/Manila' }).replace('/', '');
+           const newRef = `MLY-${year}-${md}-${Math.random().toString(36).slice(2, 8)}`;
  
            const newEntry = new Entry({
              ref: newRef,
