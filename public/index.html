@@ -72,6 +72,22 @@
         <p class="confirm" id="confirmMsg" role="status" aria-live="polite" hidden></p>
       </form>
     </div>
+
+    <form id="search" class="search-form" role="search">
+      <div class="input-group mb-2">
+        <input
+          type="text"
+          id="searchInput"
+          class="form-control"
+          placeholder="Search keywords..."
+          aria-label="Search keywords..."
+          aria-describedby="search-button"
+        />
+        <button class="search-button btn btn-primary" type="submit" id="search-button">
+          Search
+        </button>
+      </div>
+    </form>
  
     <div class="col-lg-7">
       <div class="registry-head">
@@ -100,6 +116,7 @@
 
 
 <script>
+
   // `entries` is the source-of-truth list of requests. We persist it to `localStorage`
   // so other pages (like `admin.html`) can read and react to changes.
   let entries = [];
@@ -138,6 +155,21 @@
   let refCounter = 232;
   let currentFilter = 'all';
   let justAddedRef = null;
+
+  let searchTerm = '';
+  const searchForm = document.getElementById('search');
+  const searchInput = document.getElementById('searchInput');
+
+  searchInput.addEventListener('input', () => {
+    searchTerm = searchInput.value.trim().toLowerCase();
+    render();
+  });
+
+  searchForm.addEventListener('submit', (evt) => {
+    evt.preventDefault();
+    render();
+  });
+
  
   const ledgerList = document.getElementById('ledgerList');
   const filterGroup = document.getElementById('filterGroup');
@@ -172,11 +204,26 @@
   }
 
   function render(){
+
+
+    //const rows = entries.filter(e => {
+      //if (currentFilter === 'removed') return e.status ==='removed';
+      //if (currentFilter === 'all') return e.status !== 'removed';
+          //return e.status === currentFilter;                              // any other specific filter
+  //});
+
+  const query = searchTerm.toLowerCase();
     const rows = entries.filter(e => {
-      if (currentFilter === 'removed') return e.status ==='removed';
-      if (currentFilter === 'all') return e.status !== 'removed';
-          return e.status === currentFilter;                              // any other specific filter
-  });
+      if (query) {
+        const haystack = `${e.ref} ${e.title} ${e.fullname} ${e.category} ${e.purok} ${e.date}`.toLowerCase();
+        return haystack.includes(query);
+      }
+      if (currentFilter === 'removed' && e.status !== 'removed') return false;
+      if (currentFilter === 'all' && e.status === 'removed') return false;
+      if (currentFilter !== 'all' && currentFilter !== 'removed' && e.status !== currentFilter) return false;
+      return true;
+    });
+
     ledgerList.innerHTML = rows.map(e => `
     <li class="ledger-row">
     <div>

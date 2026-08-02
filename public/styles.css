@@ -122,13 +122,19 @@
     padding-block:1rem 4rem;
   }
   .registry h2{
-    font-size:1.5rem; font-weight:700; margin-bottom:1.2rem;
+    font-size:1.5rem; 
+    font-weight:700; 
+    margin-bottom:1.2rem;
   }
-/* form */
+  /* form */
   .field{margin-bottom:1.1rem;}
   .field label{
-    display:block; font-size:.78rem; font-weight:600;
-    letter-spacing:.03em; margin-bottom:.35rem; color:var(--ink);
+    display:block; 
+    font-size:.78rem; 
+    font-weight:600;
+    letter-spacing:.03em; 
+    margin-bottom:.35rem; 
+    color:var(--ink);
   }
   .field input,
   .field select,
@@ -141,6 +147,7 @@
     font-size:.92rem;
     border-radius:2px;
     color:var(--charcoal);
+    transition: border-color .2s ease-in-out;
   }
   .field input:focus,
   .field select:focus,
@@ -245,6 +252,17 @@
 
 
 
+  .search-button{
+    border:0.1rem solid #30c252 !important;
+    background-color:#3F5D46 !important;
+  }
 
 
 
+  #searchInput:focus,
+  #searchInput:focus-visible {
+    outline-offset:3px !important;
+    outline:2px solid var(--gold) !important;
+    box-shadow: none !important;
+    border-color: black !important;
+  }
